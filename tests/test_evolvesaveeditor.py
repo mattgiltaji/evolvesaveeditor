@@ -5,7 +5,7 @@
 import os
 import pytest
 
-from evolvesaveeditor.evolvesaveeditor import EvolveSaveEditor as Ese
+from evolvesaveeditor import EvolveSaveEditor as Ese
 
 # paths to test files and such
 current_dir = os.path.dirname(os.path.abspath(__file__))
