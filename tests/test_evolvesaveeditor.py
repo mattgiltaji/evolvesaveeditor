@@ -17,7 +17,7 @@ class TestEvolveSaveEditor:
     @pytest.mark.parametrize(("test_input", "expected"), [
         ("taste", r"C4QwzsCmQ===")
     ])
-    def test_compress_lz_string(self, test_input, expected):
+    def test_compress_lz_string_can_compress_correctly(self, test_input, expected):
         actual = Ese.compress_lz_string(test_input)
         assert actual == expected
 
@@ -25,6 +25,10 @@ class TestEvolveSaveEditor:
     @pytest.mark.parametrize(("test_input", "expected"), [
         (r"C4QwzsCmQ===", "taste")
     ])
-    def test_decompress_lz_string(self, test_input, expected):
+    def test_decompress_lz_string_can_decompress_valid_text(self, test_input, expected):
         actual = Ese.decompress_lz_string(test_input)
         assert actual == expected
+
+    def test_decompress_lz_string_returns_none_on_invalid_text(self):
+        actual = Ese.decompress_lz_string(r"potato")
+        assert actual is None
