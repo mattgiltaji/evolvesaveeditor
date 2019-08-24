@@ -4,6 +4,7 @@
 import argparse
 import logging
 import sys
+import lzstring
 
 
 def main():
@@ -54,4 +55,12 @@ def get_logging_format():
 
 
 class EvolveSaveEditor:
-    pass
+
+    @staticmethod
+    def compress_lz_string(raw):
+        return lzstring.LZString.compressToBase64(raw)
+
+    @staticmethod
+    def decompress_lz_string(compressed):
+        return lzstring.LZString.decompressFromBase64(compressed)
+
