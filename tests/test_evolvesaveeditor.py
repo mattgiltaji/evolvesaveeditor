@@ -303,6 +303,15 @@ class TestEvolveSaveEditorAdjustPrestigeCurrency:
         actual = Ese.adjust_prestige_currency(test_input, {"Plasmid": 3000, "Phage": 2000, "Dark": 1000})
         assert actual == expected
 
+    def test_update_prestige_currency_value_skips_missing_currencies(self):
+        test_input = {
+            "race": {"species": "test", "Plasmid": {"count": 1}, "Phage": {"count": 2}, "Dark": {"count": 3}},
+            "stats": {"plasmid": 4, "phage": 5}}
+        expected = test_input
+        actual_data, actual_added = Ese._update_prestige_currency_value(test_input, "fake", 1000)
+        assert actual_data == expected
+        assert actual_added == 0
+
 
 class TestEvolveSaveEditorAdjustArpaResearch:
     def test_adjust_arpa_research_can_handle_no_research(self):

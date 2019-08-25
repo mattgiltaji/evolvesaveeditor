@@ -189,26 +189,39 @@ class EvolveSaveEditor:
         crates_unlocked = False
         containers_unlocked = False
 
-        if "storage_yard" in city and "count" in city["storage_yard"] and city["storage_yard"]["count"] > 0:
-            crates_unlocked = True
-        if "warehouse" in city and "count" in city["warehouse"] and city["warehouse"]["count"] > 0:
-            containers_unlocked = True
+        try:
+            if city["storage_yard"]["count"] > 0:
+                crates_unlocked = True
+        except KeyError:
+            logger = get_logger()
+            logger.info("crates are not unlocked")
+
+        try:
+            if city["warehouse"]["count"] > 0:
+                containers_unlocked = True
+        except KeyError:
+            logger = get_logger()
+            logger.info("containers are not unlocked")
+
         if not crates_unlocked and not containers_unlocked:
             # nothing to add here
             return save_data
 
         for name in resources:
             resource = resources[name]
-            if "stackable" not in resource or not resource["stackable"]:
-                # this resource doesn't use containers and crates
+            try:
+                if not resource["stackable"]:
+                    # this resource doesn't use containers and crates
+                    continue
+                if resource["amount"] == 0:
+                    # don't add containers for resources that aren't unlocked yet
+                    continue
+                if crates_unlocked and resource["crates"] < amount:
+                    resource["crates"] = amount
+                if containers_unlocked and resource["containers"] < amount:
+                    resource["containers"] = amount
+            except KeyError:
                 continue
-            if "amount" not in resource or resource["amount"] == 0:
-                # don't add containers for resources that aren't unlocked yet
-                continue
-            if containers_unlocked and "containers" in resource and resource["containers"] < amount:
-                resource["containers"] = amount
-            if crates_unlocked and "crates" in resource and resource["crates"] < amount:
-                resource["crates"] = amount
 
         updated_data = save_data
         updated_data["resource"] = resources
@@ -258,30 +271,31 @@ class EvolveSaveEditor:
     def _update_building_counts(data, amounts):
         for Building_name in data:
             building = data[Building_name]
-            if "count" not in building:
+            try:
+                if building["count"] == 0:
+                    continue
+                if Building_name in EvolveSaveEditor.BUILDING_TYPES["special"]:
+                    # world collider has total 1859 segments, last one has to be done manually
+                    if Building_name == "world_collider" and building["count"] < 1858:
+                        building["count"] = 1858
+                    # swarm satellite scales based on swarm_control
+                    elif Building_name == "swarm_satellite":
+                        max_swarms = 6 * data["swarm_control"]["count"]
+                        if building["count"] < max_swarms:
+                            building["count"] = max_swarms
+                    # other special buildings have total 100 segments, last one has to be done manually
+                    else:
+                        if building["count"] < 99:
+                            building["count"] = 99
+                    continue
+                for type_name in EvolveSaveEditor.BUILDING_TYPES:
+                    if Building_name in EvolveSaveEditor.BUILDING_TYPES[type_name]:
+                        amount = getattr(amounts, type_name)
+                        if building["count"] < amount:
+                            building["count"] = amount
+                        break
+            except (KeyError, TypeError):
                 continue
-            if building["count"] == 0:
-                continue
-            if Building_name in EvolveSaveEditor.BUILDING_TYPES["special"]:
-                # world collider has total 1859 segments, last one has to be done manually
-                if Building_name == "world_collider" and building["count"] < 1858:
-                    building["count"] = 1858
-                # swarm satellite scales based on swarm_control
-                elif Building_name == "swarm_satellite":
-                    max_swarms = 6 * data["swarm_control"]["count"]
-                    if building["count"] < max_swarms:
-                        building["count"] = max_swarms
-                # other special buildings have total 100 segments, last one has to be done manually
-                else:
-                    if building["count"] < 99:
-                        building["count"] = 99
-                continue
-            for type_name in EvolveSaveEditor.BUILDING_TYPES:
-                if Building_name in EvolveSaveEditor.BUILDING_TYPES[type_name]:
-                    amount = getattr(amounts, type_name)
-                    if building["count"] < amount:
-                        building["count"] = amount
-                    break
         return data
 
     @staticmethod
@@ -333,18 +347,24 @@ class EvolveSaveEditor:
     @staticmethod
     def _update_prestige_currency_value(data, currency, amount):
         added = 0
-        if amount and currency in data and data[currency]["count"]:
-            added = amount - data[currency]["count"]
-            if added > 0:
-                data[currency]["count"] = amount
-            else:
-                added = 0
+        try:
+            if amount and data[currency]["count"]:
+                added = amount - data[currency]["count"]
+                if added > 0:
+                    data[currency]["count"] = amount
+                else:
+                    added = 0
+        except KeyError:
+            pass
         return data, added
 
     @staticmethod
     def _update_prestige_currency_stats(data, currency, amount_added):
-        if amount_added and currency in data and data[currency]:
-            data[currency] = data[currency] + amount_added
+        try:
+            if amount_added and data[currency]:
+                data[currency] = data[currency] + amount_added
+        except KeyError:
+            pass
         return data
 
     @staticmethod
@@ -371,22 +391,23 @@ class EvolveSaveEditor:
 
         for research_name in arpa:
             research = arpa[research_name]
-            # genetic sequencing is handled differently than others
-            if research_name == "sequence":
-                if "progress" not in research or "max" not in research:
-                    continue
-                if research["progress"] < research["max"] - 5:
-                    research["progress"] = research["max"] - 5
-            # launch facility only has 1 rank, ignore it if that rank is done
-            elif research_name == "launch_facility":
-                if "rank" not in research or research["rank"] >= 1:
-                    continue
-                if "complete" in research and research["complete"] < 99:
-                    research["complete"] = 99
-            # we're in one of the uncapped rank researches
-            else:
-                if "complete" in research and research["complete"] < 99:
-                    research["complete"] = 99
+            try:
+                # genetic sequencing is handled differently than others
+                if research_name == "sequence":
+                    if research["progress"] < research["max"] - 5:
+                        research["progress"] = research["max"] - 5
+                # launch facility only has 1 rank, ignore it if that rank is done
+                elif research_name == "launch_facility":
+                    if research["rank"] >= 1:
+                        continue
+                    if research["complete"] < 99:
+                        research["complete"] = 99
+                # we're in one of the uncapped rank researches
+                else:
+                    if research["complete"] < 99:
+                        research["complete"] = 99
+            except KeyError:
+                continue
 
         updated_data = save_data
         updated_data["arpa"] = arpa
