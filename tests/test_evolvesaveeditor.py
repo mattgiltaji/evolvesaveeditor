@@ -68,6 +68,49 @@ class TestEvolveSaveEditorFillResources:
         assert actual == expected
 
 
+class TestEvolveSaveEditorAdjustBuildings:
+    def test_adjust_buildings_can_handle_no_buildings(self):
+        test_input = {"city": {}, "space": {}, "interstellar": {}, "portal": {}}
+        expected = test_input
+        actual = Ese.adjust_buildings(test_input, Ese.BuildingAmountsParam())
+        assert actual == expected
+
+    def test_adjust_buildings_skips_zero_and_no_count_buildings(self):
+        test_input = {"city": {"biome": "oceanic", "university": {"count": 0}, "rock_quarry": {"count": 1}, },
+                      "space": {}, "interstellar": {}, "portal": {}}
+        expected = {"city": {"biome": "oceanic", "university": {"count": 0},
+                             "rock_quarry": {"count": Ese.BuildingAmountsParam().boost}, }, "space": {},
+                    "interstellar": {}, "portal": {}}
+        actual = Ese.adjust_buildings(test_input, Ese.BuildingAmountsParam())
+        assert actual == expected
+
+    def test_adjust_buildings_will_not_lower_building_count(self):
+        test_input = {"city": {"university": {"count": 100000000}},"space": {}, "interstellar": {}, "portal": {}}
+        expected = test_input
+        actual = Ese.adjust_buildings(test_input, Ese.BuildingAmountsParam())
+        assert actual == expected
+
+    def test_adjust_buildings_special_goes_to_proper_limits(self):
+        test_input = {"city": {}, "space": {"swarm_control": {"count": 50}, "swarm_satellite": {"count": 3},
+                                            "world_collider": {"count": 1}},
+                      "interstellar": {"dyson": {"count": 2}, "stellar_engine": {"count": 4}}, "portal": {}}
+        expected = {"city": {}, "space": {"swarm_control": {"count": Ese.BuildingAmountsParam().support},
+                                          "swarm_satellite": {"count": Ese.BuildingAmountsParam().support * 6},
+                                          "world_collider": {"count": 1858}},
+                    "interstellar": {"dyson": {"count": 99}, "stellar_engine": {"count": 99}}, "portal": {}}
+        actual = Ese.adjust_buildings(test_input, Ese.BuildingAmountsParam())
+        assert actual == expected
+
+    def test_adjust_buildings_boost_type(self):
+        test_input = {"city": {"temple": {"count": 10}}, "space": {"ziggurat": {"count": 5}},
+                      "interstellar": {"processing": {"count": 4}}, "portal": {"turret": {"count": 3}}}
+        count = Ese.BuildingAmountsParam().boost
+        expected = {"city": {"temple": {"count": count}}, "space": {"ziggurat": {"count": count}},
+                    "interstellar": {"processing": {"count": count}}, "portal": {"turret": {"count": count}}}
+        actual = Ese.adjust_buildings(test_input, Ese.BuildingAmountsParam())
+        assert actual == expected
+
+
 class TestEvolveSaveEditorAdjustPrestigeCurrency:
     def test_adjust_prestige_currency_can_add_all_currencies(self):
         test_input = {

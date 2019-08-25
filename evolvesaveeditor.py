@@ -32,7 +32,7 @@ def edit_evolve_save():
 
 
 def get_logger():
-    logger = logging.getLogger("validatebackups.py")
+    logger = logging.getLogger("evolvesaveeditor.py")
     configure_logging(logger)
     return logger
 
@@ -60,9 +60,39 @@ class EvolveSaveEditor:
     # save_data_to_file method
     # adjust_data method that calls all individual helper methods before saving the data to member
     # individual data methods that accept a json object and return the modified object
-    #   fill_resources (set constrained resources to max, update infinite resources to large number)
     #   expand_resource_storage (add containers & crates)
-    #   add_owned_buildings (split into city/space/interstellar?)
+
+    BUILDING_TYPES = {
+        # buildings that provide a production or efficiency bonus bu don't make things themselves
+        "boost": ["attractor", "biodome", "biolab", "boot_camp", "drone", "far_reach", "gps", "hospital",
+                  "library", "lumber_yard", "mass_driver", "mass_ejector", "metal_refinery", "processing",
+                  "red_mine", "rock_quarry", "satellite", "sawmill", "sensor_drone", "swarm_plant", "temple",
+                  "tourist_center", "turret", "vr_center", "war_droid", "war_drone", "ziggurat"],
+        # buildings that increase the citizen cap
+        "housing": ["apartment", "basic_housing", "cottage", "farm", "habitat"],
+        # buildings that provide job slots for citizens
+        "job": ["bank", "carport", "cement_plant", "coal_mine", "fabrication", "foundry", "living_quarters",
+                "mine", "university", "wardenclyffe"],
+        # buildings that offer jobs which improve morale
+        "morale_job": ["amphitheatre", "casino"],
+
+        # buildings that can produce power when upgraded and turned on
+        "power_generator": ["coal_power", "geothermal", "e_reactor", "fusion", "fission_power", "mill",
+                            "oil_power"],
+        # buildings that generate resources
+        "production": ["elerium_prospector", "elerium_ship", "factory", "g_factory", "gas_mining", "harvester",
+                       "helium_mine", "iron_ship", "iridium_mine", "iridium_ship", "mining_droid", "neutron_miner",
+                       "oil_extractor", "oil_well", "outpost", "red_factory", "smelter"],
+        # buildings with special limits
+        "special": ["dyson", "world_collider", "stellar_engine", "swarm_satellite"],
+        # buildings that increase maximum capacity of resources
+        "storage": ["cargo_yard", "cruiser", "elerium_contain", "exchange", "exotic_lab", "garage", "garrison",
+                    "gas_storage", "laboratory", "observatory", "oil_depot", "propellant_depot", "shed", "silo",
+                    "space_barracks", "storage_yard", "trade", "warehouse", "wharf"],
+        # buildings that increase the support limit in space zones
+        "support": ["moon_base", "nav_beacon", "nexus", "red_tower", "spaceport", "space_station", "starport",
+                    "swarm_control", "xfer_station"]
+    }
 
     @staticmethod
     def compress_lz_string(raw):
@@ -103,6 +133,70 @@ class EvolveSaveEditor:
         updated_data = save_data
         updated_data["resource"] = resources
         return updated_data
+
+    @staticmethod
+    def adjust_buildings(save_data, amounts):
+        """
+        Adjust building counts to passed in amounts.
+
+        This method will set, not add, the building counts.
+        it won't update a building count if the building count is currently zero, as that will break things.
+        It won't reduce a building count if the amount is less than the building count's current value.
+
+        :param save_data: the entire evolve savefile json data that needs to be adjusted
+        :type save_data: dict
+        :param amounts: object with properties BuildingAmountsParam indicating the desired number of each building type
+        :type amounts: BuildingAmountsParam
+        :return: save_data with building counts adjusted appropriately
+        :rtype: dict
+        """
+        city = save_data["city"]
+        space = save_data["space"]
+        interstellar = save_data["interstellar"]
+        portal = save_data["portal"]
+
+        city = EvolveSaveEditor._update_building_counts(city, amounts)
+        space = EvolveSaveEditor._update_building_counts(space, amounts)
+        interstellar = EvolveSaveEditor._update_building_counts(interstellar, amounts)
+        portal = EvolveSaveEditor._update_building_counts(portal, amounts)
+
+        # update the save data and return it
+        updated_data = save_data
+        updated_data["city"] = city
+        updated_data["space"] = space
+        updated_data["interstellar"] = interstellar
+        updated_data["portal"] = portal
+        return updated_data
+
+    @staticmethod
+    def _update_building_counts(data, amounts):
+        for Building_name in data:
+            building = data[Building_name]
+            if "count" not in building:
+                continue
+            if building["count"] == 0:
+                continue
+            if Building_name in EvolveSaveEditor.BUILDING_TYPES["special"]:
+                # world collider has total 1859 segments, last one has to be done manually
+                if Building_name == "world_collider" and building["count"] < 1858:
+                    building["count"] = 1858
+                # swarm satellite scales based on swarm_control
+                elif Building_name == "swarm_satellite":
+                    max_swarms = 6 * data["swarm_control"]["count"]
+                    if building["count"] < max_swarms:
+                        building["count"] = max_swarms
+                # other special buildings have total 100 segments, last one has to be done manually
+                else:
+                    if building["count"] < 99:
+                        building["count"] = 99
+                continue
+            for type_name in EvolveSaveEditor.BUILDING_TYPES:
+                if Building_name in EvolveSaveEditor.BUILDING_TYPES[type_name]:
+                    amount = getattr(amounts, type_name)
+                    if building["count"] < amount:
+                        building["count"] = amount
+                    break
+        return data
 
     @staticmethod
     def adjust_prestige_currency(save_data, amounts):
@@ -161,3 +255,15 @@ class EvolveSaveEditor:
         if amount_added and currency in data and data[currency]:
             data[currency] = data[currency] + amount_added
         return data
+
+    class BuildingAmountsParam:
+        # used in adjust_buildings() call
+        # default amounts of each building type are below, adjust after instantiating
+        boost = 1000
+        housing = 1000
+        job = 100
+        morale_job = 500
+        power_generator = 1000
+        production = 100
+        storage = 1000
+        support = 1000
