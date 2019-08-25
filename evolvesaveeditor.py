@@ -109,5 +109,5 @@ class EvolveSaveEditor:
     @staticmethod
     def update_prestige_currency_stats(data, currency, amount_added):
         if amount_added and currency in data and data[currency]:
-            data[currency] =  data[currency] + amount_added
+            data[currency] = data[currency] + amount_added
         return data

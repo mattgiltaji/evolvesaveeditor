@@ -6,3 +6,6 @@ A save editor for the game "Evolve"
 ![GitHub](https://img.shields.io/github/license/mattgiltaji/evolvesaveeditor)
 
 Evolve is a game by [pmotschmann](https://github.com/pmotschmann/Evolve) and is playable at https://pmotschmann.github.io/Evolve/
+
+This save editor can currently do these things:
+   * Adjust Prestige Currencies (Plasmids, Phages, and Dark)
