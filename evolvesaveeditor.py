@@ -258,6 +258,19 @@ class EvolveSaveEditor:
 
     @staticmethod
     def adjust_arpa_research(save_data):
+        """
+        Adjust arpa research projects to 99% and genetic sequencing to 5 seconds from completion
+
+        This method will update arpa research projecs to 99% complete at the current rank.
+        Since the launch facility is a one time project, it won't touch it if its been completed.
+        It will update the genetic sequencing to 5 seconds away from completion.
+        of course if the genetic sequencing had less than 5 seconds left, it will leave it alone.
+
+        :param save_data: the entire evolve savefile json data that needs to be adjusted
+        :type save_data: dict
+        :return: save_data with adjusted arpa research project completions
+        :rtype: dict
+        """
         arpa = save_data["arpa"]
 
         for research_name in arpa:
@@ -278,6 +291,7 @@ class EvolveSaveEditor:
             else:
                 if "complete" in research and research["complete"] < 99:
                     research["complete"] = 99
+
         updated_data = save_data
         updated_data["arpa"] = arpa
         return updated_data

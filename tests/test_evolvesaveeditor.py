@@ -249,8 +249,14 @@ class TestEvolveSaveEditorAdjustArpaResearch:
         assert actual == expected
 
     def test_adjust_arpa_research_updates_genetic_sequencing(self):
-        test_input = {"arpa": {"sequence": {"max": 850000, "progress": 0}}}
+        test_input = {"arpa": {"sequence": {"max": 850000, "progress": 1500}}}
         expected = {"arpa": {"sequence": {"max": 850000, "progress": 849995}}}
+        actual = Ese.adjust_arpa_research(test_input)
+        assert actual == expected
+
+    def test_adjust_arpa_research_only_increases_genetic_sequencing_completion(self):
+        test_input = {"arpa": {"sequence": {"max": 9000, "progress": 8999}}}
+        expected = test_input
         actual = Ese.adjust_arpa_research(test_input)
         assert actual == expected
 
