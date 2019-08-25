@@ -17,6 +17,11 @@ def unlocked_container_and_crate_json():
     return {"city": {"storage_yard": {"count": 1}, "warehouse": {"count": 1}}}
 
 
+@pytest.fixture
+def evolve_save_editor():
+    return Ese()
+
+
 class TestEvolveSaveEditorLZString:
     # noinspection SpellCheckingInspection
     @pytest.mark.parametrize(("test_input", "expected"), [
@@ -37,6 +42,12 @@ class TestEvolveSaveEditorLZString:
     def test_decompress_lz_string_returns_none_on_invalid_text(self):
         actual = Ese.decompress_lz_string(r"potato")
         assert actual is None
+
+
+class TestEvolveSaveEditorAdjustSaveData:
+    def test_adjust_save_data_handles_empty_data(self, evolve_save_editor):
+        evolve_save_editor.adjust_save_data()
+        assert evolve_save_editor.save_data == {}
 
 
 class TestEvolveSaveEditorFillResources:

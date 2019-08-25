@@ -55,10 +55,9 @@ def get_logging_format():
 
 
 class EvolveSaveEditor:
-    # save_data attribute
+    save_data = {}
     # load_data_from_file method
     # save_data_to_file method
-    # adjust_data method that calls all individual helper methods before saving the data to member
     # individual data methods that accept a json object and return the modified object
     #   fill_population (recalculate population max based on housing and set citizens to that number)
     #   fill_soldiers (calculate soldier cap based on soldier buildings and set soldiers to that number (heal them too))
@@ -94,6 +93,9 @@ class EvolveSaveEditor:
         "support": ["moon_base", "nav_beacon", "nexus", "red_tower", "spaceport", "space_station", "starport",
                     "swarm_control", "xfer_station"]
     }
+    DEFAULT_UNBOUNDED_RESOURCE_AMOUNT = 2000000000000
+    DEFAULT_STACK_AMOUNT = 1000
+    DEFAULT_PRESTIGE_CURRENCY_AMOUNTS = {"Plasmid": 30000, "Phage": 20000, "Dark": 4000}
 
     @staticmethod
     def compress_lz_string(raw):
@@ -102,6 +104,20 @@ class EvolveSaveEditor:
     @staticmethod
     def decompress_lz_string(compressed):
         return lzstring.LZString.decompressFromBase64(compressed)
+
+    def adjust_save_data(self):
+        # adjust_data method that calls all individual helper methods before saving the data to member
+        data = self.save_data
+
+        # TODO: make this pull settings from somewhere to determine whether to run each one or not
+        # TODO: make this pull settings from somewhere to determine parameters for each call
+        data = self.fill_resources(data, self.DEFAULT_UNBOUNDED_RESOURCE_AMOUNT)
+        data = self.stack_resources(data, self.DEFAULT_STACK_AMOUNT)
+        data = self.adjust_buildings(data, self.BuildingAmountsParam())
+        data = self.adjust_prestige_currency(data, self.DEFAULT_PRESTIGE_CURRENCY_AMOUNTS)
+        data = self.adjust_arpa_research(data)
+
+        self.save_data = data
 
     @staticmethod
     def fill_resources(save_data, amount_for_unbounded):
@@ -120,16 +136,22 @@ class EvolveSaveEditor:
         :rtype: dict
         """
         # resource node has the data we are interested in
-        resources = save_data["resource"]
+        try:
+            resources = save_data["resource"]
+        except KeyError:
+            logger = get_logger()
+            logger.warning("could not load resource node in data passed to fill_resources()")
+            return save_data
 
         for name in resources:
             resource = resources[name]
-            if "max" not in resource or "amount" not in resource:
+            try:
+                if resource["max"] < 0 and resource["amount"] < amount_for_unbounded:
+                    resource["amount"] = amount_for_unbounded
+                if 0 < resource["max"] != resource["amount"]:
+                    resource["amount"] = resource["max"]
+            except KeyError:
                 continue
-            if resource["max"] < 0 and resource["amount"] < amount_for_unbounded:
-                resource["amount"] = amount_for_unbounded
-            if 0 < resource["max"] != resource["amount"]:
-                resource["amount"] = resource["max"]
 
         updated_data = save_data
         updated_data["resource"] = resources
@@ -156,8 +178,13 @@ class EvolveSaveEditor:
         :return: save_data with resources at max amounts and unbounded resources at amount_for_unbounded amount
         :rtype: dict
         """
-        resources = save_data["resource"]
-        city = save_data["city"]
+        try:
+            resources = save_data["resource"]
+            city = save_data["city"]
+        except KeyError:
+            logger = get_logger()
+            logger.warning("could not load resource or city node in data passed to stack_resources()")
+            return save_data
 
         crates_unlocked = False
         containers_unlocked = False
@@ -203,10 +230,16 @@ class EvolveSaveEditor:
         :return: save_data with building counts adjusted appropriately
         :rtype: dict
         """
-        city = save_data["city"]
-        space = save_data["space"]
-        interstellar = save_data["interstellar"]
-        portal = save_data["portal"]
+        try:
+            city = save_data["city"]
+            space = save_data["space"]
+            interstellar = save_data["interstellar"]
+            portal = save_data["portal"]
+        except KeyError:
+            logger = get_logger()
+            logger.warning(
+                "could not load city or space or insterstellar or portal node in data passed to adjust_buildings()")
+            return save_data
 
         city = EvolveSaveEditor._update_building_counts(city, amounts)
         space = EvolveSaveEditor._update_building_counts(space, amounts)
@@ -272,8 +305,13 @@ class EvolveSaveEditor:
         :rtype: dict
         """
         # race node has the data for the current run, stats node has the overall totals
-        race = save_data["race"]
-        stats = save_data["stats"]
+        try:
+            race = save_data["race"]
+            stats = save_data["stats"]
+        except KeyError:
+            logger = get_logger()
+            logger.warning("could not load race or stats node in data passed to adjust_prestige_currency()")
+            return save_data
 
         # update the live amounts
         race, plasmid_added = EvolveSaveEditor._update_prestige_currency_value(race, "Plasmid", amounts["Plasmid"])
@@ -324,7 +362,12 @@ class EvolveSaveEditor:
         :return: save_data with adjusted arpa research project completions
         :rtype: dict
         """
-        arpa = save_data["arpa"]
+        try:
+            arpa = save_data["arpa"]
+        except KeyError:
+            logger = get_logger()
+            logger.warning("could not load arpa node in data passed to adjust_arpa_research()")
+            return save_data
 
         for research_name in arpa:
             research = arpa[research_name]
