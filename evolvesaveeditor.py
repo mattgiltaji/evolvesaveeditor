@@ -129,15 +129,15 @@ class EvolveSaveEditor:
         stats = save_data["stats"]
 
         # update the live amounts
-        race, plasmid_added = EvolveSaveEditor.update_prestige_currency_value(race, "Plasmid", amounts["Plasmid"])
-        race, phage_added = EvolveSaveEditor.update_prestige_currency_value(race, "Phage", amounts["Phage"])
-        race, dark_added = EvolveSaveEditor.update_prestige_currency_value(race, "Dark", amounts["Dark"])
+        race, plasmid_added = EvolveSaveEditor._update_prestige_currency_value(race, "Plasmid", amounts["Plasmid"])
+        race, phage_added = EvolveSaveEditor._update_prestige_currency_value(race, "Phage", amounts["Phage"])
+        race, dark_added = EvolveSaveEditor._update_prestige_currency_value(race, "Dark", amounts["Dark"])
 
         # update the stats
-        stats = EvolveSaveEditor.update_prestige_currency_stats(stats, "plasmid", plasmid_added)
-        stats = EvolveSaveEditor.update_prestige_currency_stats(stats, "phage", phage_added)
+        stats = EvolveSaveEditor._update_prestige_currency_stats(stats, "plasmid", plasmid_added)
+        stats = EvolveSaveEditor._update_prestige_currency_stats(stats, "phage", phage_added)
         # dark isn't currently tracked in stats but maybe one day it will be
-        stats = EvolveSaveEditor.update_prestige_currency_stats(stats, "dark", dark_added)
+        stats = EvolveSaveEditor._update_prestige_currency_stats(stats, "dark", dark_added)
 
         # update the save data and return it
         updated_data = save_data
@@ -146,7 +146,7 @@ class EvolveSaveEditor:
         return updated_data
 
     @staticmethod
-    def update_prestige_currency_value(data, currency, amount):
+    def _update_prestige_currency_value(data, currency, amount):
         added = 0
         if amount and currency in data and data[currency]["count"]:
             added = amount - data[currency]["count"]
@@ -157,7 +157,7 @@ class EvolveSaveEditor:
         return data, added
 
     @staticmethod
-    def update_prestige_currency_stats(data, currency, amount_added):
+    def _update_prestige_currency_stats(data, currency, amount_added):
         if amount_added and currency in data and data[currency]:
             data[currency] = data[currency] + amount_added
         return data
