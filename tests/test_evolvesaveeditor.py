@@ -34,39 +34,6 @@ class TestEvolveSaveEditorLZString:
         assert actual is None
 
 
-class TestEvolveSaveEditorAdjustPrestigeCurrency:
-    def test_adjust_prestige_currency_can_add_all_currencies(self):
-        test_input = {
-            "race": {"species": "test", "Plasmid": {"count": 123}, "Phage": {"count": 456}, "Dark": {"count": 7.8}},
-            "stats": {"plasmid": 3000, "phage": 2000}}
-        expected = {
-            "race": {"species": "test", "Plasmid": {"count": 1234}, "Phage": {"count": 1456}, "Dark": {"count": 107.8}},
-            "stats": {"plasmid": 4111, "phage": 3000}}
-
-        actual = Ese.adjust_prestige_currency(test_input, {"Plasmid": 1234, "Phage": 1456, "Dark": 107.8})
-        assert actual == expected
-
-    def test_adjust_prestige_currency_adds_no_currencies_if_all_zero(self):
-        test_input = {"race": {"species": "test", "Plasmid": {"count": 0}, "Phage": {"count": 0}, "Dark": {"count": 0}},
-                      "stats": {"plasmid": 0, "phage": 0}}
-        expected = {"race": {"species": "test", "Plasmid": {"count": 0}, "Phage": {"count": 0}, "Dark": {"count": 0}},
-                    "stats": {"plasmid": 0, "phage": 0}}
-
-        actual = Ese.adjust_prestige_currency(test_input, {"Plasmid": 3000, "Phage": 2000, "Dark": 1000})
-        assert actual == expected
-
-    def test_adjust_prestige_currency_does_not_reduce_currency(self):
-        test_input = {
-            "race": {"species": "test", "Plasmid": {"count": 4000}, "Phage": {"count": 3000}, "Dark": {"count": 2000}},
-            "stats": {"plasmid": 4000, "phage": 3000}}
-        expected = {
-            "race": {"species": "test", "Plasmid": {"count": 4000}, "Phage": {"count": 3000}, "Dark": {"count": 2000}},
-            "stats": {"plasmid": 4000, "phage": 3000}}
-
-        actual = Ese.adjust_prestige_currency(test_input, {"Plasmid": 3000, "Phage": 2000, "Dark": 1000})
-        assert actual == expected
-
-
 class TestEvolveSaveEditorFillResources:
     def test_fill_resources_skips_broken_elements(self):
         test_input = {"resource": {
@@ -98,4 +65,37 @@ class TestEvolveSaveEditorFillResources:
         test_input = {"resource": {"MAGIC": {"name": "MAGIC", "amount": 0, "max": -1}}}
         expected = {"resource": {"MAGIC": {"name": "MAGIC", "amount": 20000, "max": -1}}}
         actual = Ese.fill_resources(test_input, 20000)
+        assert actual == expected
+
+
+class TestEvolveSaveEditorAdjustPrestigeCurrency:
+    def test_adjust_prestige_currency_can_add_all_currencies(self):
+        test_input = {
+            "race": {"species": "test", "Plasmid": {"count": 123}, "Phage": {"count": 456}, "Dark": {"count": 7.8}},
+            "stats": {"plasmid": 3000, "phage": 2000}}
+        expected = {
+            "race": {"species": "test", "Plasmid": {"count": 1234}, "Phage": {"count": 1456}, "Dark": {"count": 107.8}},
+            "stats": {"plasmid": 4111, "phage": 3000}}
+
+        actual = Ese.adjust_prestige_currency(test_input, {"Plasmid": 1234, "Phage": 1456, "Dark": 107.8})
+        assert actual == expected
+
+    def test_adjust_prestige_currency_adds_no_currencies_if_all_zero(self):
+        test_input = {"race": {"species": "test", "Plasmid": {"count": 0}, "Phage": {"count": 0}, "Dark": {"count": 0}},
+                      "stats": {"plasmid": 0, "phage": 0}}
+        expected = {"race": {"species": "test", "Plasmid": {"count": 0}, "Phage": {"count": 0}, "Dark": {"count": 0}},
+                    "stats": {"plasmid": 0, "phage": 0}}
+
+        actual = Ese.adjust_prestige_currency(test_input, {"Plasmid": 3000, "Phage": 2000, "Dark": 1000})
+        assert actual == expected
+
+    def test_adjust_prestige_currency_does_not_reduce_currency(self):
+        test_input = {
+            "race": {"species": "test", "Plasmid": {"count": 4000}, "Phage": {"count": 3000}, "Dark": {"count": 2000}},
+            "stats": {"plasmid": 4000, "phage": 3000}}
+        expected = {
+            "race": {"species": "test", "Plasmid": {"count": 4000}, "Phage": {"count": 3000}, "Dark": {"count": 2000}},
+            "stats": {"plasmid": 4000, "phage": 3000}}
+
+        actual = Ese.adjust_prestige_currency(test_input, {"Plasmid": 3000, "Phage": 2000, "Dark": 1000})
         assert actual == expected
