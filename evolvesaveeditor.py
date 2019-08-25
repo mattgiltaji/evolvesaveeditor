@@ -73,7 +73,57 @@ class EvolveSaveEditor:
         return lzstring.LZString.decompressFromBase64(compressed)
 
     @staticmethod
+    def fill_resources(save_data, amount_for_unbounded):
+        """
+        Adjust resources to maximum amounts.
+
+        This method will update all resources to their specified maximums.
+        If the resource doesn't have a maximum, it will update to amount_for_unbounded,
+            provided that amount_for_unbounded is more than the current amount of the resource.
+
+        :param save_data: the entire evolve savefile json data that needs to be adjusted
+        :type save_data: dict
+        :param amount_for_unbounded: amount to set unbounded resources (resources that don't have a max value) to
+        :type amount_for_unbounded: int or float
+        :return: save_data with resources at max amounts and unbounded resources at amount_for_unbounded amount
+        :rtype: dict
+        """
+        # resource node has the data we are interested in
+        resources = save_data["resource"]
+
+        for name in resources:
+            resource = resources[name]
+            if "max" not in resource or "amount" not in resource:
+                continue
+            if resource["max"] < 0 and resource["amount"] < amount_for_unbounded:
+                resource["amount"] = amount_for_unbounded
+            if 0 < resource["max"] != resource["amount"]:
+                resource["amount"] = resource["max"]
+
+        updated_data = save_data
+        updated_data["resource"] = resources
+        return updated_data
+
+    @staticmethod
     def adjust_prestige_currency(save_data, amounts):
+        """
+        Adjust prestige currency values to passed in amounts.
+
+        This method will set, not add, the currencies.
+        it won't update a currency if the currency is currently zero, as that can break things.
+        It won't reduce a currency if the amount is less than the currency's current value.
+        Example: call this function and pass in 1000 plasmids.
+            If save_data has 0 plasmids, the function will return adjusted data with 0 plasmids.
+            If save_data has between 1 and 999 plasmids, the function will return adjusted data with 1000 plasmids.
+            If save_data has more than 1000 plasmids, the function will return adjusted data with the same plasmids.
+
+        :param save_data: the entire evolve savefile json data that needs to be adjusted
+        :type save_data: dict
+        :param amounts: dict of prestige currencies and how much we should update each one to (int or float)
+        :type amounts: dict
+        :return: save_data with adjusted prestige currencies and relevant statistics
+        :rtype: dict
+        """
         # race node has the data for the current run, stats node has the overall totals
         race = save_data["race"]
         stats = save_data["stats"]

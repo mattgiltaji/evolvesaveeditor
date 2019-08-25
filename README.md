@@ -9,3 +9,4 @@ Evolve is a game by [pmotschmann](https://github.com/pmotschmann/Evolve) and is 
 
 This save editor can currently do these things:
    * Adjust Prestige Currencies (Plasmids, Phages, and Dark)
+   * FIll Resources to Maximum (or a big number for resources without a max)

@@ -65,3 +65,37 @@ class TestEvolveSaveEditorAdjustPrestigeCurrency:
 
         actual = Ese.adjust_prestige_currency(test_input, {"Plasmid": 3000, "Phage": 2000, "Dark": 1000})
         assert actual == expected
+
+
+class TestEvolveSaveEditorFillResources:
+    def test_fill_resources_skips_broken_elements(self):
+        test_input = {"resource": {
+            "RNA": {"name": "RNA", "max": 100},
+            "DNA": {"name": "DNA", "amount": 0},
+            "FAKE": {"name": "FAKE", "amount": 0, "max": 2000}}}
+        expected = {"resource": {
+            "RNA": {"name": "RNA", "max": 100},
+            "DNA": {"name": "DNA", "amount": 0},
+            "FAKE": {"name": "FAKE", "amount": 2000, "max": 2000}}}
+        actual = Ese.fill_resources(test_input, 10000)
+        assert actual == expected
+
+    def test_fill_resources_fills_to_max(self):
+        test_input = {"resource": {
+            "RNA": {"name": "RNA", "display": True, "amount": 0, "crates": 0, "diff": 0, "delta": 0, "max": 100,
+                    "rate": 1, "containers": 0},
+            "DNA": {"name": "DNA", "display": False, "amount": 0, "crates": 0, "diff": 0, "delta": 0, "max": 100,
+                    "rate": 1, "containers": 0}}}
+        expected = {"resource": {
+            "RNA": {"name": "RNA", "display": True, "amount": 100, "crates": 0, "diff": 0, "delta": 0, "max": 100,
+                    "rate": 1, "containers": 0},
+            "DNA": {"name": "DNA", "display": False, "amount": 100, "crates": 0, "diff": 0, "delta": 0, "max": 100,
+                    "rate": 1, "containers": 0}}}
+        actual = Ese.fill_resources(test_input, 10000)
+        assert actual == expected
+
+    def test_fill_resources_sets_unbounded_resources_to_amount(self):
+        test_input = {"resource": {"MAGIC": {"name": "MAGIC", "amount": 0, "max": -1}}}
+        expected = {"resource": {"MAGIC": {"name": "MAGIC", "amount": 20000, "max": -1}}}
+        actual = Ese.fill_resources(test_input, 20000)
+        assert actual == expected
