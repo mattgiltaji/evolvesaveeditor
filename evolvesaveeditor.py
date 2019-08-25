@@ -66,8 +66,8 @@ class EvolveSaveEditor:
         # buildings that provide a production or efficiency bonus bu don't make things themselves
         "boost": ["attractor", "biodome", "biolab", "boot_camp", "drone", "far_reach", "gps", "hospital",
                   "library", "lumber_yard", "mass_driver", "mass_ejector", "metal_refinery", "processing",
-                  "red_mine", "rock_quarry", "satellite", "sawmill", "sensor_drone", "swarm_plant", "temple",
-                  "tourist_center", "turret", "vr_center", "war_droid", "war_drone", "ziggurat"],
+                  "red_mine", "rock_quarry", "satellite", "sawmill", "swarm_plant", "temple", "tourist_center",
+                  "turret", "vr_center", "war_droid", "war_drone", "ziggurat"],
         # buildings that increase the citizen cap
         "housing": ["apartment", "basic_housing", "cottage", "farm", "habitat"],
         # buildings that provide job slots for citizens
@@ -87,8 +87,8 @@ class EvolveSaveEditor:
         "special": ["dyson", "world_collider", "stellar_engine", "swarm_satellite"],
         # buildings that increase maximum capacity of resources
         "storage": ["cargo_yard", "cruiser", "elerium_contain", "exchange", "exotic_lab", "garage", "garrison",
-                    "gas_storage", "laboratory", "observatory", "oil_depot", "propellant_depot", "shed", "silo",
-                    "space_barracks", "storage_yard", "trade", "warehouse", "wharf"],
+                    "gas_storage", "laboratory", "observatory", "oil_depot", "propellant_depot", "sensor_drone", "shed",
+                    "silo", "space_barracks", "storage_yard", "trade", "warehouse", "wharf"],
         # buildings that increase the support limit in space zones
         "support": ["moon_base", "nav_beacon", "nexus", "red_tower", "spaceport", "space_station", "starport",
                     "swarm_control", "xfer_station"]
