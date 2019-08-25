@@ -12,6 +12,11 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 test_data_dir = os.path.join(current_dir, "files")
 
 
+@pytest.fixture
+def unlocked_container_and_crate_json():
+    return {"city": {"storage_yard": {"count": 1}, "warehouse": {"count": 1}}}
+
+
 class TestEvolveSaveEditorLZString:
     # noinspection SpellCheckingInspection
     @pytest.mark.parametrize(("test_input", "expected"), [
@@ -65,6 +70,71 @@ class TestEvolveSaveEditorFillResources:
         test_input = {"resource": {"MAGIC": {"name": "MAGIC", "amount": 0, "max": -1}}}
         expected = {"resource": {"MAGIC": {"name": "MAGIC", "amount": 20000, "max": -1}}}
         actual = Ese.fill_resources(test_input, 20000)
+        assert actual == expected
+
+
+class TestEvolveSaveEditorStackResources:
+    def test_stack_resources_does_not_update_when_stackables_not_unlocked(self):
+        test_input = {
+            "resource": {"Food": {"name": "Food", "amount": 10, "crates": 0, "stackable": True, "containers": 0}},
+            "city": {}}
+        expected = test_input
+        actual = Ese.stack_resources(test_input, 1000)
+        assert actual == expected
+
+    def test_stack_resources_updates_only_crates_when_containers_not_unlocked(self):
+        test_input = {
+            "resource": {"Food": {"name": "Food", "amount": 13, "crates": 0, "stackable": True, "containers": 0}},
+            "city": {"storage_yard": {"count": 1}}}
+        expected = {
+            "resource": {"Food": {"name": "Food", "amount": 13, "crates": 144, "stackable": True, "containers": 0}},
+            "city": {"storage_yard": {"count": 1}}}
+        actual = Ese.stack_resources(test_input, 144)
+        assert actual == expected
+
+    def test_stack_resources_updates_only_containers_when_crates_not_unlocked(self):
+        test_input = {
+            "resource": {"Food": {"name": "Food", "amount": 13, "crates": 0, "stackable": True, "containers": 0}},
+            "city": {"warehouse": {"count": 1}}}
+        expected = {
+            "resource": {"Food": {"name": "Food", "amount": 13, "crates": 0, "stackable": True, "containers": 42}},
+            "city": {"warehouse": {"count": 1}}}
+        actual = Ese.stack_resources(test_input, 42)
+        assert actual == expected
+
+    def test_stack_resources_updates_only_when_positive_amount(self, unlocked_container_and_crate_json):
+        test_input = unlocked_container_and_crate_json
+        test_input["resource"] = {
+            "Stone": {"name": "Stone", "amount": 0, "crates": 0, "stackable": True, "containers": 0}}
+        expected = test_input
+        actual = Ese.stack_resources(test_input, 240)
+        assert actual == expected
+
+    def test_stack_resources_does_not_update_unstackable_resources(self, unlocked_container_and_crate_json):
+        test_input = unlocked_container_and_crate_json
+        test_input["resource"] = {"RNA": {"name": "RNA", "amount": 44, "crates": 0, "containers": 0},
+                                  "Oil": {"name": "Oil", "amount": 25, "crates": 0, "stackable": False,
+                                          "containers": 0}}
+        expected = test_input
+        actual = Ese.stack_resources(test_input, 76)
+        assert actual == expected
+
+    def test_stack_resources_does_not_remove_extra_stackables(self, unlocked_container_and_crate_json):
+        test_input = unlocked_container_and_crate_json
+        test_input["resource"] = {
+            "Furs": {"name": "Furs", "amount": 100, "crates": 30, "stackable": True, "containers": 30}}
+        expected = test_input
+        actual = Ese.stack_resources(test_input, 20)
+        assert actual == expected
+
+    def test_stack_resources_updates_stackables(self, unlocked_container_and_crate_json):
+        test_input = unlocked_container_and_crate_json
+        test_input["resource"] = {
+            "Copper": {"name": "Copper", "amount": 12, "crates": 1, "stackable": True, "containers": 2}}
+        expected = test_input
+        expected["resource"]["Copper"]["crates"] = 1000
+        expected["resource"]["Copper"]["containers"] = 1000
+        actual = Ese.stack_resources(test_input, 1000)
         assert actual == expected
 
 

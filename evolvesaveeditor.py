@@ -60,7 +60,8 @@ class EvolveSaveEditor:
     # save_data_to_file method
     # adjust_data method that calls all individual helper methods before saving the data to member
     # individual data methods that accept a json object and return the modified object
-    #   expand_resource_storage (add containers & crates)
+    #   fill_population (recalculate population max based on housing and set citizens to that number)
+    #   fill_soldiers (calculate soldier cap based on soldier buildings and set soldiers to that number (heal them too))
 
     BUILDING_TYPES = {
         # buildings that provide a production or efficiency bonus bu don't make things themselves
@@ -129,6 +130,58 @@ class EvolveSaveEditor:
                 resource["amount"] = amount_for_unbounded
             if 0 < resource["max"] != resource["amount"]:
                 resource["amount"] = resource["max"]
+
+        updated_data = save_data
+        updated_data["resource"] = resources
+        return updated_data
+
+    @staticmethod
+    def stack_resources(save_data, amount):
+        """
+        Add containers and crates to all relevant resources.
+
+        This method will add containers and crates to any resources that match these criteria:
+            At least 1 of the resource exists, meaning the resource is unlocked
+            The resource can use crates and containers for expanded storage
+            At least 1 Freight Yard building exists (so crates are unlocked)
+                OR
+            At least 1 Container Port building exists (so containers are unlocked)
+            (If only the Freight Yard is available, this method will only set crates)
+            (If only the Container Port is available, this method will only set containers)
+
+        :param save_data: the entire evolve savefile json data that needs to be adjusted
+        :type save_data: dict
+        :param amount: amount of crates and containers to set each resource to
+        :type amount: int
+        :return: save_data with resources at max amounts and unbounded resources at amount_for_unbounded amount
+        :rtype: dict
+        """
+        resources = save_data["resource"]
+        city = save_data["city"]
+
+        crates_unlocked = False
+        containers_unlocked = False
+
+        if "storage_yard" in city and "count" in city["storage_yard"] and city["storage_yard"]["count"] > 0:
+            crates_unlocked = True
+        if "warehouse" in city and "count" in city["warehouse"] and city["warehouse"]["count"] > 0:
+            containers_unlocked = True
+        if not crates_unlocked and not containers_unlocked:
+            # nothing to add here
+            return save_data
+
+        for name in resources:
+            resource = resources[name]
+            if "stackable" not in resource or not resource["stackable"]:
+                # this resource doesn't use containers and crates
+                continue
+            if "amount" not in resource or resource["amount"] == 0:
+                # don't add containers for resources that aren't unlocked yet
+                continue
+            if containers_unlocked and "containers" in resource and resource["containers"] < amount:
+                resource["containers"] = amount
+            if crates_unlocked and "crates" in resource and resource["crates"] < amount:
+                resource["crates"] = amount
 
         updated_data = save_data
         updated_data["resource"] = resources
@@ -261,10 +314,10 @@ class EvolveSaveEditor:
         """
         Adjust arpa research projects to 99% and genetic sequencing to 5 seconds from completion
 
-        This method will update arpa research projecs to 99% complete at the current rank.
+        This method will update arpa research projects to 99% complete at the current rank.
         Since the launch facility is a one time project, it won't touch it if its been completed.
         It will update the genetic sequencing to 5 seconds away from completion.
-        of course if the genetic sequencing had less than 5 seconds left, it will leave it alone.
+        of course if the genetic sequencing had less than 5 seconds left, it will leave it as is.
 
         :param save_data: the entire evolve savefile json data that needs to be adjusted
         :type save_data: dict
