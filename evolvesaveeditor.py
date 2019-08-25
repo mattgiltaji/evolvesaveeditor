@@ -256,6 +256,32 @@ class EvolveSaveEditor:
             data[currency] = data[currency] + amount_added
         return data
 
+    @staticmethod
+    def adjust_arpa_research(save_data):
+        arpa = save_data["arpa"]
+
+        for research_name in arpa:
+            research = arpa[research_name]
+            # genetic sequencing is handled differently than others
+            if research_name == "sequence":
+                if "progress" not in research or "max" not in research:
+                    continue
+                if research["progress"] < research["max"] - 5:
+                    research["progress"] = research["max"] - 5
+            # launch facility only has 1 rank, ignore it if that rank is done
+            elif research_name == "launch_facility":
+                if "rank" not in research or research["rank"] >= 1:
+                    continue
+                if "complete" in research and research["complete"] < 99:
+                    research["complete"] = 99
+            # we're in one of the uncapped rank researches
+            else:
+                if "complete" in research and research["complete"] < 99:
+                    research["complete"] = 99
+        updated_data = save_data
+        updated_data["arpa"] = arpa
+        return updated_data
+
     class BuildingAmountsParam:
         # used in adjust_buildings() call
         # default amounts of each building type are below, adjust after instantiating

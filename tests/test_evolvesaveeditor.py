@@ -221,3 +221,53 @@ class TestEvolveSaveEditorAdjustPrestigeCurrency:
 
         actual = Ese.adjust_prestige_currency(test_input, {"Plasmid": 3000, "Phage": 2000, "Dark": 1000})
         assert actual == expected
+
+
+class TestEvolveSaveEditorAdjustArpaResearch:
+    def test_adjust_arpa_research_can_handle_no_research(self):
+        test_input = {"arpa": {}}
+        expected = test_input
+        actual = Ese.adjust_arpa_research(test_input)
+        assert actual == expected
+
+    def test_adjust_arpa_research_skips_broken_nodes(self):
+        test_input = {"arpa": {"sequence": {"progress": 0}, "launch_facility": {"rank": 0}, "lhc": {"rank": 10}}}
+        expected = test_input
+        actual = Ese.adjust_arpa_research(test_input)
+        assert actual == expected
+
+    def test_adjust_arpa_research_does_not_update_launch_facility_past_rank_1(self):
+        test_input = {"arpa": {"launch_facility": {"complete": 0, "rank": 1}}}
+        expected = test_input
+        actual = Ese.adjust_arpa_research(test_input)
+        assert actual == expected
+
+    def test_adjust_arpa_research_updates_initial_launch_facility(self):
+        test_input = {"arpa": {"launch_facility": {"complete": 0, "rank": 0}}}
+        expected = {"arpa": {"launch_facility": {"complete": 99, "rank": 0}}}
+        actual = Ese.adjust_arpa_research(test_input)
+        assert actual == expected
+
+    def test_adjust_arpa_research_updates_genetic_sequencing(self):
+        test_input = {"arpa": {"sequence": {"max": 850000, "progress": 0}}}
+        expected = {"arpa": {"sequence": {"max": 850000, "progress": 849995}}}
+        actual = Ese.adjust_arpa_research(test_input)
+        assert actual == expected
+
+    def test_adjust_arpa_research_updates_lhc(self):
+        test_input = {"arpa": {"lhc": {"complete": 0, "rank": 0}}}
+        expected = {"arpa": {"lhc": {"complete": 99, "rank": 0}}}
+        actual = Ese.adjust_arpa_research(test_input)
+        assert actual == expected
+
+    def test_adjust_arpa_research_updates_stock_exchange(self):
+        test_input = {"arpa": {"stock_exchange": {"complete": 0, "rank": 15}}}
+        expected = {"arpa": {"stock_exchange": {"complete": 99, "rank": 15}}}
+        actual = Ese.adjust_arpa_research(test_input)
+        assert actual == expected
+
+    def test_adjust_arpa_research_updates_monument(self):
+        test_input = {"arpa": {"monument": {"complete": 0, "rank": 68}}}
+        expected = {"arpa": {"monument": {"complete": 99, "rank": 68}}}
+        actual = Ese.adjust_arpa_research(test_input)
+        assert actual == expected
