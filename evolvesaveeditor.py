@@ -61,7 +61,6 @@ class EvolveSaveEditor:
     # load_data_from_file method
     # save_data_to_file method
     # individual data methods that accept a json object and return the modified object
-    #   fill_population (recalculate population max based on housing and set citizens to that number)
     #   fill_soldiers (calculate soldier cap based on soldier buildings and set soldiers to that number (heal them too))
 
     BUILDING_TYPES = {
@@ -116,6 +115,7 @@ class EvolveSaveEditor:
         data = self.fill_resources(data, self.DEFAULT_UNBOUNDED_RESOURCE_AMOUNT)
         data = self.stack_resources(data, self.DEFAULT_STACK_AMOUNT)
         data = self.adjust_buildings(data, self.BuildingAmountsParam())
+        data = self.fill_population(data)
         data = self.adjust_prestige_currency(data, self.DEFAULT_PRESTIGE_CURRENCY_AMOUNTS)
         data = self.adjust_arpa_research(data)
 
@@ -299,6 +299,70 @@ class EvolveSaveEditor:
             except (KeyError, TypeError):
                 continue
         return data
+
+    @staticmethod
+    def fill_population(save_data):
+        """
+        Fills citizen count up to maximum based on recalculated population cap
+
+        This method goes through all the relevant buildings to figure out how many citizens
+        the new save data should be able to accommodate, then updates population cap and current population to that num.
+        It ignores the fact that some housing buildings need to be turned on to work, so errs on more citizens.
+
+        :param save_data: the entire evolve savefile json data that needs to be adjusted
+        :type save_data: dict
+        :return: save_data with population's max and amounts set to the newly calculated value
+        :rtype: dict
+        """
+        try:
+            resources = copy.deepcopy(save_data["resource"])
+            city = save_data["city"]
+            space = save_data["space"]
+            interstellar = save_data["interstellar"]
+            race = save_data["race"]
+        except KeyError:
+            logger = get_logger()
+            logger.warning("could not load resource or city or space or interstellar or race node in data passed to "
+                           "fill_population()")
+            return save_data
+        try:
+            # we need to know what species this is to figure out where the citizen count is stored
+            species = race["species"]
+            citizen_node = resources[species]
+        except KeyError:
+            logger = get_logger()
+            logger.warning("could not determine species in fill_population()")
+            return save_data
+
+        new_citizen_cap = 0
+        # use a wrapper function here to avoid a lot of try/except blocks
+        new_citizen_cap += EvolveSaveEditor._get_building_count(city, "basic_housing")
+        new_citizen_cap += EvolveSaveEditor._get_building_count(city, "farm")
+        new_citizen_cap += EvolveSaveEditor._get_building_count(space, "living_quarters")
+        new_citizen_cap += EvolveSaveEditor._get_building_count(interstellar, "habitat")
+        new_citizen_cap += EvolveSaveEditor._get_building_count(city, "cottage") * 2  # each one holds 2
+        new_citizen_cap += EvolveSaveEditor._get_building_count(city, "apartment") * 5  # each one holds 5
+
+        try:
+            if new_citizen_cap > citizen_node["amount"]:
+                citizen_node["max"] = new_citizen_cap
+                citizen_node["amount"] = new_citizen_cap
+        except KeyError:
+            logger = get_logger()
+            logger.warning("could not update population count in fill_population()")
+            return save_data
+
+        updated_data = save_data
+        updated_data["resource"] = resources
+        return updated_data
+
+    @staticmethod
+    def _get_building_count(save_data, building_name):
+        try:
+            return save_data[building_name]["count"]
+        except KeyError:
+            pass
+        return 0
 
     @staticmethod
     def adjust_prestige_currency(save_data, amounts):

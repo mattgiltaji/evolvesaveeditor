@@ -88,6 +88,18 @@ class TestEvolveSaveEditorAdjustSaveData:
         evolve_save_editor.adjust_save_data()
         assert evolve_save_editor.save_data == expected
 
+    def test_adjust_save_data_fills_population(self, evolve_save_editor):
+        test_input = {"resource": {"test_species": {"name": "Test_Species", "amount": 42, "max": 50}},
+                      "city": {"basic_housing": {"count": 1}}, "space": {}, "interstellar": {}, "portal": {},
+                      "race": {"species": "test_species"}}
+        expected = copy.deepcopy(test_input)
+        expected["city"]["basic_housing"]["count"] = 1000
+        expected["resource"]["test_species"]["amount"] = 1000
+        expected["resource"]["test_species"]["max"] = 1000
+        evolve_save_editor.save_data = test_input
+        evolve_save_editor.adjust_save_data()
+        assert evolve_save_editor.save_data == expected
+
     def test_adjust_save_data_adjusts_prestige_currency(self, evolve_save_editor):
         test_input = {
             "race": {"species": "test", "Plasmid": {"count": 100}, "Phage": {"count": 10}, "Dark": {"count": 1}},
@@ -152,7 +164,7 @@ class TestEvolveSaveEditorStackResources:
         test_input = {
             "resource": {"Food": {"name": "Food", "amount": 10, "crates": 0, "stackable": True, "containers": 0}},
             "city": {}}
-        expected = test_input
+        expected = copy.deepcopy(test_input)
         actual = Ese.stack_resources(test_input, 1000)
         assert actual == expected
 
@@ -180,7 +192,7 @@ class TestEvolveSaveEditorStackResources:
         test_input = unlocked_container_and_crate_json
         test_input["resource"] = {
             "Stone": {"name": "Stone", "amount": 0, "crates": 0, "stackable": True, "containers": 0}}
-        expected = test_input
+        expected = copy.deepcopy(test_input)
         actual = Ese.stack_resources(test_input, 240)
         assert actual == expected
 
@@ -189,7 +201,7 @@ class TestEvolveSaveEditorStackResources:
         test_input["resource"] = {"RNA": {"name": "RNA", "amount": 44, "crates": 0, "containers": 0},
                                   "Oil": {"name": "Oil", "amount": 25, "crates": 0, "stackable": False,
                                           "containers": 0}}
-        expected = test_input
+        expected = copy.deepcopy(test_input)
         actual = Ese.stack_resources(test_input, 76)
         assert actual == expected
 
@@ -197,7 +209,7 @@ class TestEvolveSaveEditorStackResources:
         test_input = unlocked_container_and_crate_json
         test_input["resource"] = {
             "Furs": {"name": "Furs", "amount": 100, "crates": 30, "stackable": True, "containers": 30}}
-        expected = test_input
+        expected = copy.deepcopy(test_input)
         actual = Ese.stack_resources(test_input, 20)
         assert actual == expected
 
@@ -215,7 +227,7 @@ class TestEvolveSaveEditorStackResources:
 class TestEvolveSaveEditorAdjustBuildings:
     def test_adjust_buildings_can_handle_no_buildings(self):
         test_input = {"city": {}, "space": {}, "interstellar": {}, "portal": {}}
-        expected = test_input
+        expected = copy.deepcopy(test_input)
         actual = Ese.adjust_buildings(test_input, Ese.BuildingAmountsParam())
         assert actual == expected
 
@@ -230,7 +242,7 @@ class TestEvolveSaveEditorAdjustBuildings:
 
     def test_adjust_buildings_will_not_lower_building_count(self):
         test_input = {"city": {"university": {"count": 100000000}}, "space": {}, "interstellar": {}, "portal": {}}
-        expected = test_input
+        expected = copy.deepcopy(test_input)
         actual = Ese.adjust_buildings(test_input, Ese.BuildingAmountsParam())
         assert actual == expected
 
@@ -334,6 +346,50 @@ class TestEvolveSaveEditorAdjustBuildings:
         assert actual == expected
 
 
+class TestEvolveSaveEditorFillPopulation:
+    def test_fill_population_can_handle_no_buildings(self):
+        test_input = {"resource": {}, "city": {}, "space": {}, "interstellar": {}, "race": {}}
+        expected = copy.deepcopy(test_input)
+        actual = Ese.fill_population(test_input)
+        assert actual == expected
+
+    def test_fill_population_can_handle_missing_species(self):
+        test_input = {"resource": {"test_species": {"name": "Test_Species", "amount": 42, "max": 100}},
+                      "city": {"basic_housing": {"count": 100}}, "space": {}, "interstellar": {}, "race": {}}
+        expected = copy.deepcopy(test_input)
+        actual = Ese.fill_population(test_input)
+        assert actual == expected
+
+    def test_fill_population_can_handle_missing_buildings(self):
+        test_input = {"resource": {"test_species": {"name": "Test_Species", "amount": 42, "max": 50}},
+                      "city": {"basic_housing": {"count": 100}}, "space": {}, "interstellar": {},
+                      "race": {"species": "test_species"}}
+        expected = copy.deepcopy(test_input)
+        expected["resource"]["test_species"]["amount"] = 100
+        expected["resource"]["test_species"]["max"] = 100
+        actual = Ese.fill_population(test_input)
+        assert actual == expected
+
+    def test_fill_population_can_handle_missing_population_amount(self):
+        test_input = {"resource": {"test_species": {"name": "Test_Species", "max": 100}},
+                      "city": {"basic_housing": {"count": 100}}, "space": {}, "interstellar": {},
+                      "race": {"species": "test_species"}}
+        expected = copy.deepcopy(test_input)
+        actual = Ese.fill_population(test_input)
+        assert actual == expected
+
+    def test_fill_population_can_work_with_all_housing_buildings(self):
+        test_input = {"resource": {"test_species": {"name": "Test_Species", "amount": 18, "max": 100}},
+                      "city": {"basic_housing": {"count": 3}, "farm": {"count": 40}, "cottage": {"count": 250},
+                               "apartment": {"count": 1200}}, "space": {"living_quarters": {"count": 70000}},
+                      "interstellar": {"habitat": {"count": 800000}}, "race": {"species": "test_species"}}
+        expected = copy.deepcopy(test_input)
+        expected["resource"]["test_species"]["amount"] = 876543
+        expected["resource"]["test_species"]["max"] = 876543
+        actual = Ese.fill_population(test_input)
+        assert actual == expected
+
+
 class TestEvolveSaveEditorAdjustPrestigeCurrency:
     def test_adjust_prestige_currency_can_add_all_currencies(self):
         test_input = {
@@ -370,7 +426,7 @@ class TestEvolveSaveEditorAdjustPrestigeCurrency:
         test_input = {
             "race": {"species": "test", "Plasmid": {"count": 1}, "Phage": {"count": 2}, "Dark": {"count": 3}},
             "stats": {"plasmid": 4, "phage": 5}}
-        expected = test_input
+        expected = copy.deepcopy(test_input)
         # noinspection PyProtectedMember
         actual_data, actual_added = Ese._update_prestige_currency_value(test_input, "fake", 1000)
         assert actual_data == expected
@@ -380,19 +436,19 @@ class TestEvolveSaveEditorAdjustPrestigeCurrency:
 class TestEvolveSaveEditorAdjustArpaResearch:
     def test_adjust_arpa_research_can_handle_no_research(self):
         test_input = {"arpa": {}}
-        expected = test_input
+        expected = copy.deepcopy(test_input)
         actual = Ese.adjust_arpa_research(test_input)
         assert actual == expected
 
     def test_adjust_arpa_research_skips_broken_nodes(self):
         test_input = {"arpa": {"sequence": {"progress": 0}, "launch_facility": {"rank": 0}, "lhc": {"rank": 10}}}
-        expected = test_input
+        expected = copy.deepcopy(test_input)
         actual = Ese.adjust_arpa_research(test_input)
         assert actual == expected
 
     def test_adjust_arpa_research_does_not_update_launch_facility_past_rank_1(self):
         test_input = {"arpa": {"launch_facility": {"complete": 0, "rank": 1}}}
-        expected = test_input
+        expected = copy.deepcopy(test_input)
         actual = Ese.adjust_arpa_research(test_input)
         assert actual == expected
 
@@ -410,7 +466,7 @@ class TestEvolveSaveEditorAdjustArpaResearch:
 
     def test_adjust_arpa_research_only_increases_genetic_sequencing_completion(self):
         test_input = {"arpa": {"sequence": {"max": 9000, "progress": 8999}}}
-        expected = test_input
+        expected = copy.deepcopy(test_input)
         actual = Ese.adjust_arpa_research(test_input)
         assert actual == expected
 
