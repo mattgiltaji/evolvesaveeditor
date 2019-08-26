@@ -4,6 +4,7 @@
 
 import os
 import pytest
+import copy
 
 from evolvesaveeditor import EvolveSaveEditor as Ese
 
@@ -48,6 +49,32 @@ class TestEvolveSaveEditorAdjustSaveData:
     def test_adjust_save_data_handles_empty_data(self, evolve_save_editor):
         evolve_save_editor.adjust_save_data()
         assert evolve_save_editor.save_data == {}
+
+    def test_adjust_save_data_fills_resources(self, evolve_save_editor):
+        test_input = {"resource": {
+            "Money": {"name": "$", "display": True, "amount": 5, "crates": 0, "max": 2000, "stackable": False,
+                      "containers": 0},
+            "Food": {"name": "Food", "display": True, "amount": 240, "crates": 0, "max": 240, "stackable": True,
+                     "containers": 0}}}
+        expected = copy.deepcopy(test_input)
+        expected["resource"]["Money"]["amount"] = 2000
+        evolve_save_editor.save_data = test_input
+        evolve_save_editor.adjust_save_data()
+        assert evolve_save_editor.save_data == expected
+
+    def test_adjust_save_data_stacks_resources(self, unlocked_container_and_crate_json, evolve_save_editor):
+        test_input = unlocked_container_and_crate_json
+        test_input["resource"] = {
+            "Money": {"name": "$", "display": True, "amount": 2000, "crates": 0, "max": 2000, "stackable": False,
+                      "containers": 0},
+            "Stone": {"name": "Stone", "display": True, "amount": 240, "crates": 8, "max": 240, "stackable": True,
+                      "containers": 4}}
+        expected = copy.deepcopy(test_input)
+        expected["resource"]["Stone"]["crates"] = evolve_save_editor.DEFAULT_STACK_AMOUNT
+        expected["resource"]["Stone"]["containers"] = evolve_save_editor.DEFAULT_STACK_AMOUNT
+        evolve_save_editor.save_data = test_input
+        evolve_save_editor.adjust_save_data()
+        assert evolve_save_editor.save_data == expected
 
 
 class TestEvolveSaveEditorFillResources:
@@ -142,7 +169,7 @@ class TestEvolveSaveEditorStackResources:
         test_input = unlocked_container_and_crate_json
         test_input["resource"] = {
             "Copper": {"name": "Copper", "amount": 12, "crates": 1, "stackable": True, "containers": 2}}
-        expected = test_input
+        expected = copy.deepcopy(test_input)
         expected["resource"]["Copper"]["crates"] = 1000
         expected["resource"]["Copper"]["containers"] = 1000
         actual = Ese.stack_resources(test_input, 1000)
