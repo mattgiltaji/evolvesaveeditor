@@ -335,6 +335,7 @@ class TestEvolveSaveEditorAdjustPrestigeCurrency:
             "race": {"species": "test", "Plasmid": {"count": 1}, "Phage": {"count": 2}, "Dark": {"count": 3}},
             "stats": {"plasmid": 4, "phage": 5}}
         expected = test_input
+        # noinspection PyProtectedMember
         actual_data, actual_added = Ese._update_prestige_currency_value(test_input, "fake", 1000)
         assert actual_data == expected
         assert actual_added == 0

@@ -2,8 +2,10 @@
 # The game can be found at https://pmotschmann.github.io/Evolve/
 
 import argparse
+import copy
 import logging
 import sys
+
 import lzstring
 
 
@@ -107,7 +109,7 @@ class EvolveSaveEditor:
 
     def adjust_save_data(self):
         # adjust_data method that calls all individual helper methods before saving the data to member
-        data = self.save_data
+        data = copy.deepcopy(self.save_data)
 
         # TODO: make this pull settings from somewhere to determine whether to run each one or not
         # TODO: make this pull settings from somewhere to determine parameters for each call
@@ -137,7 +139,7 @@ class EvolveSaveEditor:
         """
         # resource node has the data we are interested in
         try:
-            resources = save_data["resource"]
+            resources = copy.deepcopy(save_data["resource"])
         except KeyError:
             logger = get_logger()
             logger.warning("could not load resource node in data passed to fill_resources()")
@@ -179,7 +181,7 @@ class EvolveSaveEditor:
         :rtype: dict
         """
         try:
-            resources = save_data["resource"]
+            resources = copy.deepcopy(save_data["resource"])
             city = save_data["city"]
         except KeyError:
             logger = get_logger()
@@ -244,14 +246,14 @@ class EvolveSaveEditor:
         :rtype: dict
         """
         try:
-            city = save_data["city"]
-            space = save_data["space"]
-            interstellar = save_data["interstellar"]
-            portal = save_data["portal"]
+            city = copy.deepcopy(save_data["city"])
+            space = copy.deepcopy(save_data["space"])
+            interstellar = copy.deepcopy(save_data["interstellar"])
+            portal = copy.deepcopy(save_data["portal"])
         except KeyError:
             logger = get_logger()
             logger.warning(
-                "could not load city or space or insterstellar or portal node in data passed to adjust_buildings()")
+                "could not load city or space or interstellar or portal node in data passed to adjust_buildings()")
             return save_data
 
         city = EvolveSaveEditor._update_building_counts(city, amounts)
@@ -320,8 +322,8 @@ class EvolveSaveEditor:
         """
         # race node has the data for the current run, stats node has the overall totals
         try:
-            race = save_data["race"]
-            stats = save_data["stats"]
+            race = copy.deepcopy(save_data["race"])
+            stats = copy.deepcopy(save_data["stats"])
         except KeyError:
             logger = get_logger()
             logger.warning("could not load race or stats node in data passed to adjust_prestige_currency()")
@@ -383,7 +385,7 @@ class EvolveSaveEditor:
         :rtype: dict
         """
         try:
-            arpa = save_data["arpa"]
+            arpa = copy.deepcopy(save_data["arpa"])
         except KeyError:
             logger = get_logger()
             logger.warning("could not load arpa node in data passed to adjust_arpa_research()")
