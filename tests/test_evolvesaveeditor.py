@@ -76,6 +76,42 @@ class TestEvolveSaveEditorAdjustSaveData:
         evolve_save_editor.adjust_save_data()
         assert evolve_save_editor.save_data == expected
 
+    def test_adjust_save_data_adjusts_buildings(self, evolve_save_editor):
+        test_input = {"city": {"basic_housing": {"count": 6}}, "space": {"swarm_control": {"count": 2}},
+                      "interstellar": {"processing": {"count": 4}}, "portal": {"carport": {"count": 20}}}
+        expected = copy.deepcopy(test_input)
+        expected["city"]["basic_housing"]["count"] = evolve_save_editor.BuildingAmountsParam().housing
+        expected["space"]["swarm_control"]["count"] = evolve_save_editor.BuildingAmountsParam().support
+        expected["interstellar"]["processing"]["count"] = evolve_save_editor.BuildingAmountsParam().boost
+        expected["portal"]["carport"]["count"] = evolve_save_editor.BuildingAmountsParam().job
+        evolve_save_editor.save_data = test_input
+        evolve_save_editor.adjust_save_data()
+        assert evolve_save_editor.save_data == expected
+
+    def test_adjust_save_data_adjusts_prestige_currency(self, evolve_save_editor):
+        test_input = {
+            "race": {"species": "test", "Plasmid": {"count": 100}, "Phage": {"count": 10}, "Dark": {"count": 1}},
+            "stats": {"plasmid": 10000, "phage": 2000}}
+        expected = {
+            "race": {"species": "test", "Plasmid": {"count": 30000}, "Phage": {"count": 20000},
+                     "Dark": {"count": 4000}},
+            "stats": {"plasmid": 39900, "phage": 21990}}
+
+        evolve_save_editor.save_data = test_input
+        evolve_save_editor.adjust_save_data()
+        assert evolve_save_editor.save_data == expected
+
+    def test_adjust_save_data_adjusts_arpa_research(self, evolve_save_editor):
+        test_input = {
+            "arpa": {"launch_facility": {"complete": 15, "rank": 0}, "sequence": {"max": 50005, "progress": 2700},
+                     "lhc": {"complete": 13, "rank": 45}}}
+        expected = {
+            "arpa": {"launch_facility": {"complete": 99, "rank": 0}, "sequence": {"max": 50005, "progress": 50000},
+                     "lhc": {"complete": 99, "rank": 45}}}
+        evolve_save_editor.save_data = test_input
+        evolve_save_editor.adjust_save_data()
+        assert evolve_save_editor.save_data == expected
+
 
 class TestEvolveSaveEditorFillResources:
     def test_fill_resources_skips_broken_elements(self):
