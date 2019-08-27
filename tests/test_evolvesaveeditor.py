@@ -2,9 +2,11 @@
 # run from evolvesaveeditor dir as:
 #    python -m pytest tests/test_evolvesaveeditor.py
 
-import os
-import pytest
 import copy
+import filecmp
+import os
+
+import pytest
 
 from evolvesaveeditor import EvolveSaveEditor as Ese
 
@@ -21,6 +23,100 @@ def unlocked_container_and_crate_json():
 @pytest.fixture
 def evolve_save_editor():
     return Ese()
+
+
+@pytest.yield_fixture
+def temp_file(tmpdir):
+    filepath = os.path.join(tmpdir, "temp.txt")
+    yield filepath
+    try:
+        os.remove(filepath)
+    except OSError:
+        pass
+
+
+class TestEvolveSaveEditorSaveLoadFile:
+    # noinspection SpellCheckingInspection
+    def test_save_data_to_file_handles_start_file(self, evolve_save_editor, tmpdir):
+        test_input = {"seed": 2953, "resource": {
+            "RNA": {"name": "RNA", "display": True, "amount": 0, "crates": 0, "diff": 0, "delta": 0, "max": 100,
+                    "rate": 1, "containers": 0},
+            "DNA": {"name": "DNA", "display": False, "amount": 0, "crates": 0, "diff": 0, "delta": 0, "max": 100,
+                    "rate": 1, "containers": 0}}, "evolution": {}, "tech": {}, "city": {
+            "morale": {"current": 0, "unemployed": 0, "stress": 0, "entertain": 0, "leadership": 0, "season": 0,
+                       "weather": 0, "warmonger": 0, "tax": 0},
+            "calendar": {"day": 0, "year": 0, "season": 0, "weather": 2, "temp": 1, "moon": 0, "wind": 0, "orbit": 365},
+            "powered": False, "power": 0, "biome": "grassland", "geology": {},
+            "market": {"qty": 10, "mtrade": 0, "trade": 0, "active": False}}, "space": {}, "interstellar": {},
+                      "portal": {}, "civic": {"free": 0, "farmer": {"job": "farmer", "name": "Farmer", "display": False,
+                                                                    "workers": 0, "max": 0, "impact": 1.35,
+                                                                    "assigned": 0, "stress": 5},
+                                              "lumberjack": {"job": "lumberjack", "name": "Lumberjack",
+                                                             "display": False, "workers": 0, "max": 0, "impact": 1,
+                                                             "assigned": 0, "stress": 5},
+                                              "quarry_worker": {"job": "quarry_worker", "name": "Quarry Worker",
+                                                                "display": False, "workers": 0, "max": 0, "impact": 1,
+                                                                "assigned": 0, "stress": 5},
+                                              "miner": {"job": "miner", "name": "Miner", "display": False, "workers": 0,
+                                                        "max": 0, "impact": 1, "assigned": 0, "stress": 4},
+                                              "coal_miner": {"job": "coal_miner", "name": "Coal Miner",
+                                                             "display": False, "workers": 0, "max": 0, "impact": 0.2,
+                                                             "assigned": 0, "stress": 4},
+                                              "craftsman": {"job": "craftsman", "name": "Craftsman", "display": False,
+                                                            "workers": 0, "max": 0, "impact": 1, "assigned": 0,
+                                                            "stress": 5},
+                                              "cement_worker": {"job": "cement_worker", "name": "Cement Plant Worker",
+                                                                "display": False, "workers": 0, "max": 0, "impact": 0.4,
+                                                                "assigned": 0, "stress": 5},
+                                              "entertainer": {"job": "entertainer", "name": "Entertainer",
+                                                              "display": False, "workers": 0, "max": 0, "impact": 1,
+                                                              "assigned": 0, "stress": 10},
+                                              "professor": {"job": "professor", "name": "Professor", "display": False,
+                                                            "workers": 0, "max": 0, "impact": 0.5, "assigned": 0,
+                                                            "stress": 6},
+                                              "scientist": {"job": "scientist", "name": "Scientist", "display": False,
+                                                            "workers": 0, "max": 0, "impact": 1, "assigned": 0,
+                                                            "stress": 5},
+                                              "banker": {"job": "banker", "name": "Banker", "display": False,
+                                                         "workers": 0, "max": 0, "impact": 0.1, "assigned": 0,
+                                                         "stress": 6},
+                                              "colonist": {"job": "colonist", "name": "Colonist", "display": False,
+                                                           "workers": 0, "max": 0, "impact": 1, "assigned": 0,
+                                                           "stress": 5},
+                                              "space_miner": {"job": "space_miner", "name": "Space Miner",
+                                                              "display": False, "workers": 0, "max": 0, "impact": 1,
+                                                              "assigned": 0, "stress": 5},
+                                              "hell_surveyor": {"job": "hell_surveyor", "name": "Surveyor",
+                                                                "display": False, "workers": 0, "max": 0, "impact": 1,
+                                                                "assigned": 0, "stress": 1},
+                                              "taxes": {"tax_rate": 20, "display": False}},
+                      "race": {"species": "protoplasm", "gods": "none", "old_gods": "none", "seeded": False,
+                               "Plasmid": {"count": 0}, "Phage": {"count": 0}, "Dark": {"count": 0}, "deterioration": 0,
+                               "gene_fortify": 0, "minor": {}, "mutation": 0}, "genes": {"minor": {}},
+                      "stats": {"start": 1566692510773, "days": 0, "tdays": 0, "reset": 0, "plasmid": 0, "universes": 0,
+                                "phage": 0, "starved": 0, "tstarved": 0, "died": 0, "tdied": 0, "know": 0, "tknow": 0,
+                                "portals": 0, "achieve": {}, "feat": {}}, "event": 200, "new": False,
+                      "version": "0.5.6",
+                      "settings": {"civTabs": 7, "showEvolve": True, "showCity": False, "showIndustry": False,
+                                   "showResearch": False, "showCivic": False, "showResources": False,
+                                   "showMarket": False, "showStorage": False, "showGenetics": False, "showSpace": False,
+                                   "showAchieve": False, "animated": True, "disableReset": False, "theme": "dark",
+                                   "locale": "en-US",
+                                   "space": {"home": True, "moon": False, "red": False, "hell": False, "sun": False,
+                                             "gas": False, "gas_moon": False, "belt": False, "dwarf": False,
+                                             "blackhole": False, "alpha": False, "proxima": False, "nebula": False,
+                                             "neutron": False}, "showDeep": False, "showPortal": False,
+                                   "portal": {"fortress": False, "badlands": False, "pit": False}, "showEjector": False,
+                                   "resTabs": 0, "marketTabs": 0, "spaceTabs": 0, "statsTabs": 0, "mKeys": True,
+                                   "arpa": {"arpaTabs": 0, "physics": True, "genetics": False, "crispr": False}},
+                      "queue": {"display": False, "queue": []}, "r_queue": {"display": False, "queue": []},
+                      "starDock": {}, "lastMsg": {"m": "You are protoplasm in the primordial ooze", "c": "warning"},
+                      "arpa": {}}
+        expected_file = os.path.join(test_data_dir, "startgame_original.txt")
+        actual_file = os.path.join(tmpdir, "start_file.txt")
+        evolve_save_editor.save_data = test_input
+        evolve_save_editor.save_data_to_file(actual_file)
+        assert filecmp.cmp(actual_file, expected_file)
 
 
 class TestEvolveSaveEditorLZString:
@@ -100,7 +196,6 @@ class TestEvolveSaveEditorAdjustSaveData:
         evolve_save_editor.adjust_save_data()
         assert evolve_save_editor.save_data == expected
 
-    @pytest.mark.skip
     def test_adjust_save_data_fills_soldiers(self, evolve_save_editor):
         test_input = {"city": {"garrison": {"count": 1}}, "space": {}, "interstellar": {}, "portal": {},
                       "civic": {"garrison": {"workers": 200, "wounded": 80, "raid": 200, "max": 600}}}
@@ -153,15 +248,11 @@ class TestEvolveSaveEditorFillResources:
 
     def test_fill_resources_fills_to_max(self):
         test_input = {"resource": {
-            "RNA": {"name": "RNA", "display": True, "amount": 0, "crates": 0, "diff": 0, "delta": 0, "max": 100,
-                    "rate": 1, "containers": 0},
-            "DNA": {"name": "DNA", "display": False, "amount": 0, "crates": 0, "diff": 0, "delta": 0, "max": 100,
-                    "rate": 1, "containers": 0}}}
+            "RNA": {"name": "RNA", "display": True, "amount": 0, "crates": 0, "max": 100, "containers": 0},
+            "DNA": {"name": "DNA", "display": False, "amount": 0, "crates": 0, "max": 100, "containers": 0}}}
         expected = {"resource": {
-            "RNA": {"name": "RNA", "display": True, "amount": 100, "crates": 0, "diff": 0, "delta": 0, "max": 100,
-                    "rate": 1, "containers": 0},
-            "DNA": {"name": "DNA", "display": False, "amount": 100, "crates": 0, "diff": 0, "delta": 0, "max": 100,
-                    "rate": 1, "containers": 0}}}
+            "RNA": {"name": "RNA", "display": True, "amount": 100, "crates": 0, "max": 100, "containers": 0},
+            "DNA": {"name": "DNA", "display": False, "amount": 100, "crates": 0, "max": 100, "containers": 0}}}
         actual = Ese.fill_resources(test_input, 10000)
         assert actual == expected
 

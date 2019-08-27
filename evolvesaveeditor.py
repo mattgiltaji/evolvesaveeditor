@@ -3,7 +3,9 @@
 
 import argparse
 import copy
+import json
 import logging
+import os
 import sys
 
 import lzstring
@@ -95,6 +97,13 @@ class EvolveSaveEditor:
     DEFAULT_UNBOUNDED_RESOURCE_AMOUNT = 2000000000000
     DEFAULT_STACK_AMOUNT = 1000
     DEFAULT_PRESTIGE_CURRENCY_AMOUNTS = {"Plasmid": 30000, "Phage": 20000, "Dark": 4000}
+
+    def save_data_to_file(self, filepath):
+        adjusted_path = os.path.normpath(filepath)
+        json_str = json.dumps(self.save_data)
+        lz_string = self.compress_lz_string(json_str)
+        with open(adjusted_path, "w") as f:
+            f.write(lz_string)
 
     @staticmethod
     def compress_lz_string(raw):
