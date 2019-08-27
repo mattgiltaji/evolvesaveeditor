@@ -2,28 +2,13 @@ version: '1.0.{build}'
 
 environment:
   matrix:
-    - PYTHON: C:\Python37-x64
-      TOXENV: py37
-      PYTHON_ARCH: "64"
-    - PYTHON: C:\Python37
-      TOXENV: py37
-      PYTHON_ARCH: "32"
-
+  - TOXENV: py36
+  - TOXENV: py37
 
 install:
 - pip install tox
-- pip install pyinstaller
 
-build_script:
-- "%PYTHON%/python pyinstaller evolvesaveeditor.py"
-
-# before_package:
-#- 7z a EvolveSaveEditor.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\dist\evolvesaveeditor
+build: off
 
 test_script:
 - tox
-
-artifacts:
-- path: dist\evolvesaveeditor
-  name: EvolveSaveEditor
-  type: zip
