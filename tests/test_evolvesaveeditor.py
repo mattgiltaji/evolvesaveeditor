@@ -100,6 +100,19 @@ class TestEvolveSaveEditorAdjustSaveData:
         evolve_save_editor.adjust_save_data()
         assert evolve_save_editor.save_data == expected
 
+    @pytest.mark.skip
+    def test_adjust_save_data_fills_soldiers(self, evolve_save_editor):
+        test_input = {"city": {"garrison": {"count": 1}}, "space": {}, "interstellar": {}, "portal": {},
+                      "civic": {"garrison": {"workers": 200, "wounded": 80, "raid": 200, "max": 600}}}
+        expected = copy.deepcopy(test_input)
+        expected["city"]["garrison"]["count"] = 1000
+        expected["civic"]["garrison"]["workers"] = 3000
+        expected["civic"]["garrison"]["max"] = 3000
+        expected["civic"]["garrison"]["wounded"] = 0
+        evolve_save_editor.save_data = test_input
+        evolve_save_editor.adjust_save_data()
+        assert evolve_save_editor.save_data == expected
+
     def test_adjust_save_data_adjusts_prestige_currency(self, evolve_save_editor):
         test_input = {
             "race": {"species": "test", "Plasmid": {"count": 100}, "Phage": {"count": 10}, "Dark": {"count": 1}},
@@ -353,13 +366,6 @@ class TestEvolveSaveEditorFillPopulation:
         actual = Ese.fill_population(test_input)
         assert actual == expected
 
-    def test_fill_population_can_handle_missing_species(self):
-        test_input = {"resource": {"test_species": {"name": "Test_Species", "amount": 42, "max": 100}},
-                      "city": {"basic_housing": {"count": 100}}, "space": {}, "interstellar": {}, "race": {}}
-        expected = copy.deepcopy(test_input)
-        actual = Ese.fill_population(test_input)
-        assert actual == expected
-
     def test_fill_population_can_handle_missing_buildings(self):
         test_input = {"resource": {"test_species": {"name": "Test_Species", "amount": 42, "max": 50}},
                       "city": {"basic_housing": {"count": 100}}, "space": {}, "interstellar": {},
@@ -387,6 +393,42 @@ class TestEvolveSaveEditorFillPopulation:
         expected["resource"]["test_species"]["amount"] = 876543
         expected["resource"]["test_species"]["max"] = 876543
         actual = Ese.fill_population(test_input)
+        assert actual == expected
+
+
+class TestEvolveSaveEditorFillSoldiers:
+    def test_fill_soldiers_can_handle_no_buildings(self):
+        test_input = {"city": {}, "space": {}, "interstellar": {}, "civic": {}}
+        expected = copy.deepcopy(test_input)
+        actual = Ese.fill_soldiers(test_input)
+        assert actual == expected
+
+    def test_fill_soldiers_can_handle_missing_civic(self):
+        test_input = {"city": {"garrison": {"count": 100}}, "space": {"space_barracks": {"count": 20}},
+                      "interstellar": {"cruiser": {"count": 3}}, "civic": {}}
+        expected = copy.deepcopy(test_input)
+        actual = Ese.fill_soldiers(test_input)
+        assert actual == expected
+
+    def test_fill_soldiers_can_handle_missing_buildings(self):
+        test_input = {"city": {"garrison": {"count": 10}}, "space": {"space_barracks": {"count": 3}},
+                      "interstellar": {}, "civic": {"garrison": {"workers": 15, "wounded": 10, "raid": 10, "max": 1}}}
+        expected = copy.deepcopy(test_input)
+        expected["civic"]["garrison"]["workers"] = 36
+        expected["civic"]["garrison"]["max"] = 36
+        expected["civic"]["garrison"]["wounded"] = 0
+        actual = Ese.fill_soldiers(test_input)
+        assert actual == expected
+
+    def test_fill_soldiers_can_work_with_all_buildings(self):
+        test_input = {"city": {"garrison": {"count": 100}}, "space": {"space_barracks": {"count": 10}},
+                      "interstellar": {"cruiser": {"count": 1}},
+                      "civic": {"garrison": {"workers": 15, "wounded": 100, "raid": 15, "max": 100}}}
+        expected = copy.deepcopy(test_input)
+        expected["civic"]["garrison"]["workers"] = 323
+        expected["civic"]["garrison"]["max"] = 323
+        expected["civic"]["garrison"]["wounded"] = 0
+        actual = Ese.fill_soldiers(test_input)
         assert actual == expected
 
 

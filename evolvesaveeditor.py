@@ -60,8 +60,6 @@ class EvolveSaveEditor:
     save_data = {}
     # load_data_from_file method
     # save_data_to_file method
-    # individual data methods that accept a json object and return the modified object
-    #   fill_soldiers (calculate soldier cap based on soldier buildings and set soldiers to that number (heal them too))
 
     BUILDING_TYPES = {
         # buildings that provide a production or efficiency bonus bu don't make things themselves
@@ -116,6 +114,7 @@ class EvolveSaveEditor:
         data = self.stack_resources(data, self.DEFAULT_STACK_AMOUNT)
         data = self.adjust_buildings(data, self.BuildingAmountsParam())
         data = self.fill_population(data)
+        data = self.fill_soldiers(data)
         data = self.adjust_prestige_currency(data, self.DEFAULT_PRESTIGE_CURRENCY_AMOUNTS)
         data = self.adjust_arpa_research(data)
 
@@ -363,6 +362,52 @@ class EvolveSaveEditor:
         except KeyError:
             pass
         return 0
+
+    @staticmethod
+    def fill_soldiers(save_data):
+        """
+        Fills soldier count up to maximum based on recalculated soldier cap
+
+        This method goes through all the relevant buildings to figure out how many soldiers
+        the new save data should be able to accommodate, then updates soldier cap and current soldiers to that number.
+        It ignores the fact that some barracks buildings need to be turned on to work, so errs on more soldiers.
+        It also heals any wounded soldiers.
+
+        :param save_data: the entire evolve savefile json data that needs to be adjusted
+        :type save_data: dict
+        :return: save_data with soldier's max and amounts set to the newly calculated value
+        :rtype: dict
+        """
+        try:
+            civic = copy.deepcopy(save_data["civic"])
+            city = save_data["city"]
+            space = save_data["space"]
+            interstellar = save_data["interstellar"]
+        except KeyError:
+            logger = get_logger()
+            logger.warning(
+                "could not load civic or city or space or interstellar node in data passed to fill_soldiers()")
+            return save_data
+
+        new_soldier_cap = 0
+        # use a wrapper function here to avoid a lot of try/except blocks
+        new_soldier_cap += EvolveSaveEditor._get_building_count(city, "garrison") * 3  # each one holds 3
+        new_soldier_cap += EvolveSaveEditor._get_building_count(space, "space_barracks") * 2  # each one holds 2
+        new_soldier_cap += EvolveSaveEditor._get_building_count(interstellar, "cruiser") * 3  # each one holds 3
+
+        try:
+            if new_soldier_cap > civic["garrison"]["workers"]:
+                civic["garrison"]["workers"] = new_soldier_cap
+                civic["garrison"]["max"] = new_soldier_cap
+                civic["garrison"]["wounded"] = 0
+        except KeyError:
+            logger = get_logger()
+            logger.warning("could not update garrison details in fill_soldiers()")
+            return save_data
+
+        updated_data = save_data
+        updated_data["civic"] = civic
+        return updated_data
 
     @staticmethod
     def adjust_prestige_currency(save_data, amounts):

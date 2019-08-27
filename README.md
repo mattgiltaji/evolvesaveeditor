@@ -13,5 +13,6 @@ This save editor can currently do these things:
    * Update resources' assigned containers and crates (when Freight Yard and/or Container Port are built)
    * Adjust building counts (but won't add the first building of its kind as that breaks things)
    * Update number of citizens to maximum supported by housing buildings
+   * Update number of soldiers to maximum supported by barracks buildings and heals all troops.
    * Adjust A.R.P.A. research projects to 99% complete
    * Update genetic sequencing to 5 seconds from completion
