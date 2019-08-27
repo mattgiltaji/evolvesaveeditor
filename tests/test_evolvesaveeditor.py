@@ -6,11 +6,14 @@ import builtins
 import copy
 import filecmp
 import os
-from unittest import mock
+import sys
+from shutil import copyfile
+from unittest.mock import MagicMock
 
 import pytest
 
 from evolvesaveeditor import EvolveSaveEditor as Ese
+from evolvesaveeditor import main
 
 # paths to test files and such
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -443,7 +446,7 @@ class TestEvolveSaveEditorSaveLoadFile:
         test_input = {"resource": {}}
         actual_file = os.path.join(test_data_dir, "not_going_to_be_used.txt")
 
-        m = mock.MagicMock()
+        m = MagicMock()
         m.side_effect = OSError()
         evolve_save_editor.save_data = test_input
         with monkeypatch.context() as mp:
@@ -956,3 +959,14 @@ class TestEvolveSaveEditorAdjustArpaResearch:
         expected = {"arpa": {"monument": {"complete": 99, "rank": 68}}}
         actual = Ese.adjust_arpa_research(test_input)
         assert actual == expected
+
+
+class TestEvolveSaveEditorOverall:
+    def test_main(self, tmpdir, monkeypatch):
+        actual_file = os.path.join(tmpdir, "startgame_final.txt")
+        copyfile(os.path.join(test_data_dir, "startgame_original.txt"), actual_file)
+        expected_file = os.path.join(test_data_dir, "startgame_adjusted.txt")
+        with monkeypatch.context() as mp:
+            mp.setattr(sys, 'argv', ["program", actual_file])
+            main()
+        assert filecmp.cmp(actual_file, expected_file)

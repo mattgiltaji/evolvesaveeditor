@@ -16,8 +16,8 @@ def main():
     Call parse_args, then pass to edit_evolve_save() to do all the work
     :return: nothing
     """
-    parse_args(sys.argv[1:])
-    edit_evolve_save()
+    args = parse_args(sys.argv[1:])
+    edit_evolve_save(args)
 
 
 def parse_args(args):
@@ -28,11 +28,19 @@ def parse_args(args):
         """
     parser = argparse.ArgumentParser(
         description="Save editor for game evolve")
-    return parser.parse_args(args)
+    parser.add_argument("filepath", help="path to save file", type=argparse.FileType("r+"))
+    parsed_args = parser.parse_args(args)
+    filename = parsed_args.filepath.name
+    parsed_args.filepath.close()
+    parsed_args.filepath = filename
+    return parsed_args
 
 
-def edit_evolve_save():
-    pass
+def edit_evolve_save(args):
+    ese = EvolveSaveEditor()
+    ese.load_data_from_file(args.filepath)
+    ese.adjust_save_data()
+    ese.save_data_to_file(args.filepath)
 
 
 def get_logger():
@@ -582,3 +590,7 @@ class EvolveSaveEditor:
         production = 100
         storage = 1000
         support = 1000
+
+
+if __name__ == "__main__":  # pragma: no cover
+    main()
