@@ -2,9 +2,11 @@
 # run from evolvesaveeditor dir as:
 #    python -m pytest tests/test_evolvesaveeditor.py
 
+import builtins
 import copy
 import filecmp
 import os
+from unittest import mock
 
 import pytest
 
@@ -394,6 +396,33 @@ def end_game_json():
 
 
 class TestEvolveSaveEditorSaveLoadFile:
+    def test_load_data_from_file_handles_bad_filename(self, evolve_save_editor, tmpdir):
+        test_input_file = os.path.join(tmpdir, "missing.txt")
+        evolve_save_editor.load_data_from_file(test_input_file)
+        assert evolve_save_editor.save_data == {}
+
+    def test_load_data_from_file_handles_bad_json(self, evolve_save_editor):
+        test_input_file = os.path.join(test_data_dir, "broken_json.txt")
+        evolve_save_editor.load_data_from_file(test_input_file)
+        assert evolve_save_editor.save_data == {}
+
+    def test_load_data_from_file_handles_bad_encoding(self, evolve_save_editor):
+        test_input_file = os.path.join(test_data_dir, "broken_encoding.txt")
+        evolve_save_editor.load_data_from_file(test_input_file)
+        assert evolve_save_editor.save_data == {}
+
+    def test_load_data_from_file_handles_start_file(self, evolve_save_editor, start_game_json):
+        test_input_file = os.path.join(test_data_dir, "startgame_original.txt")
+        expected = start_game_json
+        evolve_save_editor.load_data_from_file(test_input_file)
+        assert evolve_save_editor.save_data == expected
+
+    def test_load_data_from_file_handles_end_file(self, evolve_save_editor, end_game_json):
+        test_input_file = os.path.join(test_data_dir, "endgame_original.txt")
+        expected = end_game_json
+        evolve_save_editor.load_data_from_file(test_input_file)
+        assert evolve_save_editor.save_data == expected
+
     def test_save_data_to_file_handles_start_file(self, evolve_save_editor, tmpdir, start_game_json):
         test_input = start_game_json
         expected_file = os.path.join(test_data_dir, "startgame_original.txt")
@@ -409,6 +438,17 @@ class TestEvolveSaveEditorSaveLoadFile:
         evolve_save_editor.save_data = test_input
         evolve_save_editor.save_data_to_file(actual_file)
         assert filecmp.cmp(actual_file, expected_file)
+
+    def test_save_data_to_file_handles_write_error(self, evolve_save_editor, monkeypatch):
+        test_input = {"resource": {}}
+        actual_file = os.path.join(test_data_dir, "not_going_to_be_used.txt")
+
+        m = mock.MagicMock()
+        m.side_effect = OSError()
+        evolve_save_editor.save_data = test_input
+        with monkeypatch.context() as mp:
+            mp.setattr(builtins, "open", m)
+            evolve_save_editor.save_data_to_file(actual_file)
 
 
 class TestEvolveSaveEditorLZString:
@@ -428,8 +468,12 @@ class TestEvolveSaveEditorLZString:
         actual = Ese.decompress_lz_string(test_input)
         assert actual == expected
 
-    def test_decompress_lz_string_returns_none_on_invalid_text(self):
-        actual = Ese.decompress_lz_string(r"potato")
+    # noinspection SpellCheckingInspection
+    @pytest.mark.parametrize("test_input", [
+        r"potato", r"N4IgzgphAmIFwAICcAGNBGANAkAnCYA9gK64DGE",
+    ])
+    def test_decompress_lz_string_returns_none_on_invalid_text(self, test_input):
+        actual = Ese.decompress_lz_string(test_input)
         assert actual is None
 
 

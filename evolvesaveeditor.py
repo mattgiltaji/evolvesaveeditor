@@ -98,12 +98,43 @@ class EvolveSaveEditor:
     DEFAULT_STACK_AMOUNT = 1000
     DEFAULT_PRESTIGE_CURRENCY_AMOUNTS = {"Plasmid": 30000, "Phage": 20000, "Dark": 4000}
 
+    def load_data_from_file(self, filepath):
+        adjusted_path = os.path.normpath(filepath)
+        try:
+            with open(adjusted_path, "r") as f:
+                lz_string = f.read()
+        except OSError:
+            logger = get_logger()
+            logger.warning(f"load_data_from_file() unable to read from file {adjusted_path}")
+            return
+
+        json_str = self.decompress_lz_string(lz_string)
+        try:
+            self.save_data = json.loads(json_str)
+        except json.JSONDecodeError as err:
+            logger = get_logger()
+            logger.warning(
+                f"load_data_from_file() could not load from file {adjusted_path} because of a json parse error {err}")
+            logger.debug(f"failed json: {json_str}")
+            return
+        except TypeError:
+            logger = get_logger()
+            logger.warning(
+                f"load_data_from_file() could not load from file {adjusted_path} because"
+                f" the data was not encoded properly")
+            return
+
     def save_data_to_file(self, filepath):
         adjusted_path = os.path.normpath(filepath)
         json_str = json.dumps(self.save_data, separators=(',', ':'))
         lz_string = self.compress_lz_string(json_str)
-        with open(adjusted_path, "w") as f:
-            f.write(lz_string)
+        try:
+            with open(adjusted_path, "w") as f:
+                f.write(lz_string)
+        except OSError:
+            logger = get_logger()
+            logger.warning(f"save_data_to_file() unable to write to file {adjusted_path}")
+            return
 
     @staticmethod
     def compress_lz_string(raw):
@@ -111,7 +142,14 @@ class EvolveSaveEditor:
 
     @staticmethod
     def decompress_lz_string(compressed):
-        return lzstring.LZString.decompressFromBase64(compressed)
+        try:
+            decompressed = lzstring.LZString.decompressFromBase64(compressed)
+        except IndexError:
+            logger = get_logger()
+            logger.warning(f"unable to decompress invalid value in decompress_lz_string()")
+            logger.debug(f"failed decompress: {compressed}")
+            return None
+        return decompressed
 
     def adjust_save_data(self):
         # adjust_data method that calls all individual helper methods before saving the data to member
