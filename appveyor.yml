@@ -1,3 +1,5 @@
+version: '1.0.{build}'
+
 environment:
   matrix:
   - TOXENV: py36
@@ -10,3 +12,11 @@ install:
 
 test_script:
 - tox
+
+on_success:
+- pyinstaller evolvesaveeditor.py
+- 7z a EvolveSaveEditor.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\dist\evolvesaveeditor
+
+artifacts:
+  - path: EvolveSaveEditor.%APPVEYOR_BUILD_VERSION%.zip
+    name: EvolveSaveEditor
