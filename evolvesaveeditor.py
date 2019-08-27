@@ -100,7 +100,7 @@ class EvolveSaveEditor:
 
     def save_data_to_file(self, filepath):
         adjusted_path = os.path.normpath(filepath)
-        json_str = json.dumps(self.save_data)
+        json_str = json.dumps(self.save_data, separators=(',', ':'))
         lz_string = self.compress_lz_string(json_str)
         with open(adjusted_path, "w") as f:
             f.write(lz_string)
