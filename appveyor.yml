@@ -19,5 +19,5 @@ test_script:
 - tox
 
 artifacts:
-- path: %APPVEYOR_BUILD_FOLDER%\dist\evolvesaveeditor
-- name: EvolveSaveEditor.%APPVEYOR_BUILD_VERSION%
+- path: dist\evolvesaveeditor
+- name: 'EvolveSaveEditor.%APPVEYOR_BUILD_VERSION%'
