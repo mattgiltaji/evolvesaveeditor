@@ -1,9 +1,10 @@
 # evolvesaveeditor
 A save editor for the game "Evolve"
 
-[![Build Status](https://travis-ci.org/mattgiltaji/evolvesaveeditor.svg?branch=master)](https://travis-ci.org/mattgiltaji/evolvesaveeditor)
+[![Travis Build Status](https://travis-ci.org/mattgiltaji/evolvesaveeditor.svg?branch=master)](https://travis-ci.org/mattgiltaji/evolvesaveeditor)
+[![Appveyor Build Status](https://ci.appveyor.com/api/projects/status/csp5r4mtud3fy4i5/branch/master?svg=true)](https://ci.appveyor.com/project/mattgiltaji/evolvesaveeditor/branch/master)
 [![Coverage Status](https://coveralls.io/repos/github/mattgiltaji/evolvesaveeditor/badge.svg?branch=master)](https://coveralls.io/github/mattgiltaji/evolvesaveeditor?branch=master)
-![GitHub](https://img.shields.io/github/license/mattgiltaji/evolvesaveeditor)
+![GitHub License](https://img.shields.io/github/license/mattgiltaji/evolvesaveeditor)
 
 Evolve is a game by [pmotschmann](https://github.com/pmotschmann/Evolve) and is playable at https://pmotschmann.github.io/Evolve/
 

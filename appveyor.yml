@@ -1,5 +1,6 @@
 environment:
   matrix:
+  - TOXENV: py36
   - TOXENV: py37
 
 build: off
