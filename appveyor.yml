@@ -19,5 +19,5 @@ test_script:
 - tox
 
 artifacts:
-  path: dist\evolvesaveeditor
-  - name: EvolveSaveEditor
+- path: dist\evolvesaveeditor
+  name: EvolveSaveEditor
