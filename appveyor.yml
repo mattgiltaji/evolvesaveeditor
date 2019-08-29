@@ -36,7 +36,10 @@ build_script:
 test_script:
 - tox
 
+before_package:
+- 7z a EvolveSaveEditor.x%PYTHON_ARCH%.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\dist\evolvesaveeditor
+
 artifacts:
-- path: dist\evolvesaveeditor
+- path: "EvolveSaveEditor.*.zip"
   name: EvolveSaveEditor
   type: zip
