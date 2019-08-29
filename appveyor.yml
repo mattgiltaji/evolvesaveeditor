@@ -2,13 +2,29 @@ version: '1.0.{build}'
 
 environment:
   matrix:
-  - TOXENV: py36
-  - TOXENV: py37
+  - PYTHON: "C:\\Python37-x64"
+    TOXENV: py37
+    PYTHON_ARCH: "64"
+    PYTHON_VERSION: 3.7
+
+init:
+- ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
 
 install:
-- pip install tox
+- SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
+- python --version
+- python -c "import sys, platform, struct;
+  print(sys.platform, platform.machine(), struct.calcsize('P')*8)"
+- python -m pip install tox
+- python -m pip pyinstaller
 
-build: off
+build_script:
+- pyinstaller evolvesaveeditor.py
 
 test_script:
 - tox
+
+artifacts:
+- path: dist\evolvesaveeditor
+  name: EvolveSaveEditor
+  type: zip
