@@ -16,7 +16,7 @@ install:
 - python -c "import sys, platform, struct;
   print(sys.platform, platform.machine(), struct.calcsize('P')*8)"
 - python -m pip install tox
-- python -m pip pyinstaller
+- python -m pip install pyinstaller
 
 build_script:
 - pyinstaller evolvesaveeditor.py
