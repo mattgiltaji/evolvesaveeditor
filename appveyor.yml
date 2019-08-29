@@ -27,17 +27,16 @@ install:
 - python --version
 - python -c "import sys, platform, struct;
   print(sys.platform, platform.machine(), struct.calcsize('P')*8)"
+- python -m pip install --upgrade pip
 - python -m pip install tox
 - python -m pip install pyinstaller
 
 build_script:
 - pyinstaller evolvesaveeditor.py
+- 7z a EvolveSaveEditor.x%PYTHON_ARCH%.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\dist\evolvesaveeditor
 
 test_script:
 - tox
-
-before_package:
-- 7z a EvolveSaveEditor.x%PYTHON_ARCH%.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\dist\evolvesaveeditor
 
 artifacts:
 - path: "EvolveSaveEditor.*.zip"
