@@ -42,3 +42,15 @@ artifacts:
 - path: "EvolveSaveEditor.*.zip"
   name: EvolveSaveEditor
   type: zip
+
+deploy:
+  release: EvolveSaveEditor-v$(appveyor_build_version)
+  description: 'EvolveSaveEditor-v$(appveyor_build_version)'
+  provider: GitHub
+  auth_token:
+    secure: 34Em9/uFMIFZ46PjwPebWEqUpOhblu2q1+M9CrPP15/mUWpgBoip0V42tO0movB+
+  artifact: /EvolveSaveEditor.*.zip/
+  draft: true
+  prerelease: false
+  on:
+    branch: release
