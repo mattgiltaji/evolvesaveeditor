@@ -9,6 +9,20 @@ install:
 
 script:
   - tox
+  - pip install pyinstaller
+  - pyinstaller evolvesaveeditor.py
+  - tar -zcvf EvolveSaveEditor.linux.x64.$TRAVIS_BUILD_NUMBER.tar.gz $TRAVIS_BUILD_DIR\dist\evolvesaveeditor
 
 after_success:
   - coveralls
+
+deploy:
+  provider: releases
+  api_key:
+    secure: dnZ7HhAZ6kJeWEnqK4TZYsoOz5vioHLIBZji7Z3BjP9uppu7x3BoZm8imMXRIP4Q3c36KQ85hJDaYao/3IZ/PCaE1u8JUJA7wvwkIrrjWBmImd2ZX7RkFhM/9t/a7nCgFGdYENyV/GmVRd3OOJAaA+AjiCA7VNciL+zWuAKTwKyhBJ4v+0M5qokiGMgOz2cqGC15unESkA7tI5vzTLM63N39Cil9iraxnl/pOLsx0oc5LsO+tKl8JCT6dW726pS8vKHNXrddpd7UDT9bCo5pM4JjiF/1uGu9YMz875VsAueapK1EqRBilTp5NH8QHLQ6YewnG65pe1KMA8DAaOGuZVWJLOeU7tD1kmsvije3zwB+4MY5UtskojL19MXupk3lpEqUDxWziG25F2YyEz02CGEkn5uYOmieBwjnVgMi9OX6HUKsyTro+R5E0O4lsBf7cXRfMohE6nYBT29d1GnqFYRCfD9gnIsl8SQ5KlKmcQWj5vK9t2KqsrmCfKMIZ9NCiC5wmnToGURJ6Ck0CpHRGGzl5OOBSEkL/wAaqmLenv82NCQPBCr00yNIlVAffw+KtKqZNto3U+1pHx3MLrRW6z9S72dCsN08giXkBrikqGJbml3fPk7Mn4uYwKHalBrJ0loZEmKw91OVugCRWw4kJvRKI3KfCY1EIzAAvnYoGcw=
+  file: "EvolveSaveEditor.*.tar.gz"
+  skip_cleanup: true
+  draft: true
+  on:
+    python: "3.7"
+
