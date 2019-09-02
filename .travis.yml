@@ -9,12 +9,15 @@ install:
 
 script:
   - tox
-  - pip install pyinstaller
-  - pyinstaller evolvesaveeditor.py
-  - tar -zcvf EvolveSaveEditor.linux.x64.$TRAVIS_BUILD_NUMBER.tar.gz $TRAVIS_BUILD_DIR\dist\evolvesaveeditor
 
 after_success:
   - coveralls
+
+before_deploy:
+  - pip install pyinstaller
+  - pyinstaller evolvesaveeditor.py
+  - tar -zcvf EvolveSaveEditor.linux.x64.$TRAVIS_BUILD_NUMBER.tar.gz $TRAVIS_BUILD_DIR/dist/evolvesaveeditor
+  - if: python = "3.7"
 
 deploy:
   provider: releases
