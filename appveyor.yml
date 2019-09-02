@@ -1,4 +1,4 @@
-version: '1.0.{build}'
+version: '{build}'
 
 environment:
   matrix:
@@ -33,7 +33,7 @@ install:
 
 build_script:
 - pyinstaller evolvesaveeditor.py
-- 7z a EvolveSaveEditor.win.x%PYTHON_ARCH%.%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\dist\evolvesaveeditor
+- 7z a EvolveSaveEditor.win.x%PYTHON_ARCH%.%APPVEYOR_REPO_TAG_NAME%.zip %APPVEYOR_BUILD_FOLDER%\dist\evolvesaveeditor
 
 test_script:
 - tox
@@ -44,8 +44,8 @@ artifacts:
   type: zip
 
 deploy:
-  release: EvolveSaveEditor-v$(appveyor_build_version)
-  description: 'EvolveSaveEditor-v$(appveyor_build_version)'
+  release: EvolveSaveEditor-$(APPVEYOR_REPO_TAG_NAME)
+  description: 'EvolveSaveEditor-$(APPVEYOR_REPO_TAG_NAME)'
   provider: GitHub
   auth_token:
     secure: 34Em9/uFMIFZ46PjwPebWEqUpOhblu2q1+M9CrPP15/mUWpgBoip0V42tO0movB+
@@ -53,5 +53,7 @@ deploy:
   draft: true
   prerelease: false
   on:
+    branch: master
     PYTHON_ARCH: "64"
     PYTHON_VERSION: 3.7
+    APPVEYOR_REPO_TAG: true
