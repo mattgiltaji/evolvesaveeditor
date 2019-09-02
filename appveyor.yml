@@ -53,7 +53,6 @@ deploy:
   draft: true
   prerelease: false
   on:
-    branch: master
     PYTHON_ARCH: "64"
     PYTHON_VERSION: 3.7
     APPVEYOR_REPO_TAG: true
