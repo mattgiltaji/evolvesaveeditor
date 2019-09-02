@@ -2,22 +2,35 @@ version: '{build}'
 
 environment:
   matrix:
-  - PYTHON: "C:\\Python37-x64"
+  - NAME: "deploy"
+    PYTHON: "C:\\Python37-x64"
+    PYTHON_ARCH: "64"
+    PYTHON_VERSION: 3.7
+    DEPLOY_SCENARIO: true
+  - NAME: "py37x64_test"
+    PYTHON: "C:\\Python37-x64"
     TOXENV: py37
     PYTHON_ARCH: "64"
     PYTHON_VERSION: 3.7
-  - PYTHON: "C:\\Python37"
+    DEPLOY_SCENARIO: false
+  - NAME: "py37x32_test"
+    PYTHON: "C:\\Python37"
     TOXENV: py37
     PYTHON_ARCH: "32"
     PYTHON_VERSION: 3.7
-  - PYTHON: "C:\\Python36-x64"
+    DEPLOY_SCENARIO: false
+  - NAME: "py36x64_test"
+    PYTHON: "C:\\Python36-x64"
     TOXENV: py36
     PYTHON_ARCH: "64"
     PYTHON_VERSION: 3.6
-  - PYTHON: "C:\\Python36"
+    DEPLOY_SCENARIO: false
+  - NAME: "py36x32_test"
+    PYTHON: "C:\\Python36"
     TOXENV: py36
     PYTHON_ARCH: "32"
     PYTHON_VERSION: 3.6
+    DEPLOY_SCENARIO: false
 
 init:
 - ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
@@ -28,31 +41,50 @@ install:
 - python -c "import sys, platform, struct;
   print(sys.platform, platform.machine(), struct.calcsize('P')*8)"
 - python -m pip install --upgrade pip
-- python -m pip install tox
-- python -m pip install pyinstaller
 
-build_script:
-- pyinstaller evolvesaveeditor.py
-- 7z a EvolveSaveEditor.win.x%PYTHON_ARCH%.%APPVEYOR_REPO_TAG_NAME%.zip %APPVEYOR_BUILD_FOLDER%\dist\evolvesaveeditor
+build: off
 
-test_script:
-- tox
+for:
+-
+  # don't run all the tests on just a tag
+  matrix:
+    only:
+      - DEPLOY_SCENARIO: false
 
-artifacts:
-- path: "EvolveSaveEditor.*.zip"
-  name: EvolveSaveEditor
-  type: zip
+  skip_tags: true
 
-deploy:
-  release: EvolveSaveEditor-$(APPVEYOR_REPO_TAG_NAME)
-  description: 'EvolveSaveEditor-$(APPVEYOR_REPO_TAG_NAME)'
-  provider: GitHub
-  auth_token:
-    secure: 34Em9/uFMIFZ46PjwPebWEqUpOhblu2q1+M9CrPP15/mUWpgBoip0V42tO0movB+
-  artifact: /EvolveSaveEditor.*.zip/
-  draft: true
-  prerelease: false
-  on:
-    PYTHON_ARCH: "64"
-    PYTHON_VERSION: 3.7
-    APPVEYOR_REPO_TAG: true
+  before_test:
+    - python -m pip install tox
+
+  test_script:
+    - tox
+
+-
+  # only run build & deploy steps on a tag
+  matrix:
+    only:
+      - DEPLOY_SCENARIO: true
+
+  skip_non_tags: true
+
+  before_build:
+    - python -m pip install -r requirements.txt
+
+  build_script:
+  - pyinstaller evolvesaveeditor.py
+  - 7z a EvolveSaveEditor.win.x%PYTHON_ARCH%.%APPVEYOR_REPO_TAG_NAME%.zip %APPVEYOR_BUILD_FOLDER%\dist\evolvesaveeditor
+
+  artifacts:
+  - path: "EvolveSaveEditor.*.zip"
+    name: EvolveSaveEditor
+    type: zip
+
+  deploy:
+    release: EvolveSaveEditor-$(APPVEYOR_REPO_TAG_NAME)
+    description: 'EvolveSaveEditor-$(APPVEYOR_REPO_TAG_NAME)'
+    provider: GitHub
+    auth_token:
+      secure: 34Em9/uFMIFZ46PjwPebWEqUpOhblu2q1+M9CrPP15/mUWpgBoip0V42tO0movB+
+    artifact: /EvolveSaveEditor.*.zip/
+    draft: true
+    prerelease: false
