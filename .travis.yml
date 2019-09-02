@@ -16,7 +16,8 @@ after_success:
 before_deploy:
   - pip install pyinstaller
   - pyinstaller evolvesaveeditor.py
-  - tar -zcvf EvolveSaveEditor.linux.x64.$TRAVIS_TAG.tar.gz $TRAVIS_BUILD_DIR/dist/evolvesaveeditor
+  - echo "creating EvolveSaveEditor.linux.x64.$TRAVIS_TAG.tar.gz"
+  - tar -zcvf "EvolveSaveEditor.linux.x64.$TRAVIS_TAG.tar.gz" $TRAVIS_BUILD_DIR/dist/evolvesaveeditor
 
 deploy:
   provider: releases
