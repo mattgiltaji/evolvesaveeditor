@@ -21,6 +21,7 @@ This save editor can currently do these things:
    
 ### How To Use
 To use this save editor:
+##### From Source:
    1. Have version 3.6 or higher [Python](https://www.python.org/downloads/) installed on your local machine.
    1. Export save from Settings tab in Evolve.
    1. Copy & Paste that exported save data into a file on your local machine.
@@ -28,6 +29,22 @@ To use this save editor:
    1. Run the evolvesaveeditor.py script in your favorite command line and pass in the path to the save file, like so:
       ```
       python .\evolvesaveeditor.py "c:\path\to\save\file.txt"
+      ```
+   1. Open the save file on your local machine and copy the contents.
+   1. Paste the contents into the import/export textarea on the settings tab in Evolve.
+   1. Click the "Import Game" button on the settings tab in Evolve.
+
+##### From Executable:
+   1. Download the latest executable for your OSfrom the [releases page](https://github.com/mattgiltaji/evolvesaveeditor/releases/)
+      * Only 64 bit linux and 64 bit windows executables are currently available; other OSes will need to run python directly.
+   1. Export save from Settings tab in Evolve.
+   1. Copy & Paste that exported save data into a file on your local machine.
+   1. Save and close the file.
+   1. Run the evolvesaveeditor executable in your favorite command line and pass in the path to the save file, like so:
+      ```
+      evolvesaveeditor.exe "c:\path\to\save\file.txt"
+            or
+      evolvesaveeditor "/path/to/save/file.txt"
       ```
    1. Open the save file on your local machine and copy the contents.
    1. Paste the contents into the import/export textarea on the settings tab in Evolve.
