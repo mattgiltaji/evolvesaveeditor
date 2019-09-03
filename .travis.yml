@@ -17,7 +17,7 @@ before_deploy:
   - pip install pyinstaller
   - pyinstaller evolvesaveeditor.py
   - echo "creating EvolveSaveEditor.linux.x64.$TRAVIS_TAG.tar.gz"
-  - tar -zcvf "EvolveSaveEditor.linux.x64.$TRAVIS_TAG.tar.gz" $TRAVIS_BUILD_DIR/dist/evolvesaveeditor
+  - tar -zcvf "$TRAVIS_BUILD_DIR/EvolveSaveEditor.linux.x64.$TRAVIS_TAG.tar.gz" -C $TRAVIS_BUILD_DIR/dist evolvesaveeditor
 
 deploy:
   provider: releases
