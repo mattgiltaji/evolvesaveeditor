@@ -80,10 +80,12 @@ for:
     type: zip
 
   deploy:
-    release: EvolveSaveEditor-$(APPVEYOR_REPO_TAG_NAME)
-    description: 'EvolveSaveEditor-$(APPVEYOR_REPO_TAG_NAME)'
+    release: $(APPVEYOR_REPO_TAG_NAME)
     provider: GitHub
     auth_token:
       secure: 34Em9/uFMIFZ46PjwPebWEqUpOhblu2q1+M9CrPP15/mUWpgBoip0V42tO0movB+
     artifact: /EvolveSaveEditor.*.zip/
     prerelease: false
+    draft: false
+    on:
+      APPVEYOR_REPO_TAG: true
