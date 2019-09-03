@@ -27,7 +27,6 @@ deploy:
   file_glob: true
   file: "EvolveSaveEditor.*.tar.gz"
   skip_cleanup: true
-  draft: true
   on:
     python: "3.7"
     branch: master
