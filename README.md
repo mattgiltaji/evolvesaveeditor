@@ -17,7 +17,7 @@ This save editor can currently do these things:
    * Update number of citizens to maximum supported by housing buildings
    * Update number of soldiers to maximum supported by barracks buildings and heals all troops.
    * Adjust A.R.P.A. research projects to 99% complete
-   * Update genetic sequencing to 5 seconds from completion
+   * ~~Update genetic sequencing to 5 seconds from completion~~ (broken right now)
    
 ### How To Use
 To use this save editor:

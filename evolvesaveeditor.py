@@ -572,7 +572,7 @@ class EvolveSaveEditor:
                 else:
                     if research["complete"] < 99:
                         research["complete"] = 99
-            except KeyError:
+            except (KeyError, TypeError):
                 continue
 
         updated_data = save_data
