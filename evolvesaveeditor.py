@@ -585,7 +585,7 @@ class EvolveSaveEditor:
         boost = 1000
         housing = 1000
         job = 100
-        morale_job = 500
+        morale_job = 1000
         power_generator = 1000
         production = 100
         storage = 1000
