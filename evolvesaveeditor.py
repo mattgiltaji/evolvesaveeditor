@@ -87,7 +87,7 @@ class EvolveSaveEditor:
 
         # buildings that can produce power when upgraded and turned on
         "power_generator": ["coal_power", "geothermal", "e_reactor", "fusion", "fission_power", "mill",
-                            "oil_power"],
+                            "oil_power", "windmill"],
         # buildings that generate resources
         "production": ["elerium_prospector", "elerium_ship", "factory", "g_factory", "gas_mining", "harvester",
                        "helium_mine", "iron_ship", "iridium_mine", "iridium_ship", "mining_droid", "neutron_miner",
@@ -97,7 +97,7 @@ class EvolveSaveEditor:
         # buildings that increase maximum capacity of resources
         "storage": ["cargo_yard", "cruiser", "elerium_contain", "exchange", "exotic_lab", "garage", "garrison",
                     "gas_storage", "laboratory", "observatory", "oil_depot", "propellant_depot", "sensor_drone", "shed",
-                    "silo", "space_barracks", "storage_yard", "trade", "warehouse", "wharf"],
+                    "silo", "slave_pen", "soul_well", "space_barracks", "storage_yard", "trade", "warehouse", "wharf"],
         # buildings that increase the support limit in space zones
         "support": ["moon_base", "nav_beacon", "nexus", "red_tower", "spaceport", "space_station", "starport",
                     "swarm_control", "xfer_station"]
