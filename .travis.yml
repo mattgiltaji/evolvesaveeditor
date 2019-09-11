@@ -1,14 +1,19 @@
 language: python
-python:
-  - "3.6"
-  - "3.7"
+python: "3.7"
+
+env:
+  - TOX_ENV=py36
+  - TOX_ENV=37
+  - TOX_ENV=bandit
+  - TOX_ENV=flake8
+  - TOX_ENV=pylint
 
 install:
   - pip install -r requirements.txt
   - pip install tox-travis
 
 script:
-  - tox
+  - tox -e $TOX_ENV
 
 after_success:
   - coveralls
