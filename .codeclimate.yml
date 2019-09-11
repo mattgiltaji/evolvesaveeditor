@@ -1,0 +1,15 @@
+engines:
+
+  markdownlint:
+    enabled: true
+
+  pep8:
+    enabled: true
+
+  radon:
+    enabled: true
+    config:
+      threshold: "C"
+
+  sonar-python:
+    enabled: true
