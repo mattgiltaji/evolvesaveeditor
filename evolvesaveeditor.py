@@ -1,5 +1,8 @@
-# This script is intended to be a save editor for the game evolve
-# The game can be found at https://pmotschmann.github.io/Evolve/
+"""
+This script is intended to be a save editor for the game evolve
+The game can be found at https://pmotschmann.github.io/Evolve/
+"""
+
 
 import argparse
 import copy
@@ -67,9 +70,14 @@ def get_logging_format():
 
 
 class EvolveSaveEditor:
+    """
+    The save editor itself.
+    Expected usage flow:
+        1. Call a load method to input data from an external source into the instance
+        2. Call adjust_save_data() to actually edit the data
+        3. Call a save method to output save data from the instance to an external source
+    """
     save_data = {}
-    # load_data_from_file method
-    # save_data_to_file method
 
     BUILDING_TYPES = {
         # buildings that provide a production or efficiency bonus bu don't make things themselves
@@ -108,10 +116,15 @@ class EvolveSaveEditor:
     DEFAULT_PRESTIGE_CURRENCY_AMOUNTS = {"Plasmid": 30000, "Phage": 20000, "Dark": 4000}
 
     def load_data_from_file(self, filepath):
+        """
+        Reads data from the file at the passed in filepath and stores it for later use
+        :param filepath: path to the file where data should be read
+        :return: nothing
+        """
         adjusted_path = os.path.normpath(filepath)
         try:
-            with open(adjusted_path, "r") as f:
-                lz_string = f.read()
+            with open(adjusted_path, "r") as file:
+                lz_string = file.read()
         except OSError:
             logger = get_logger()
             logger.warning(f"load_data_from_file() unable to read from file {adjusted_path}")
@@ -134,12 +147,17 @@ class EvolveSaveEditor:
             return
 
     def save_data_to_file(self, filepath):
+        """
+        Outputs stored data to a file at the passed in filepath
+        :param filepath: path to the file where save data should be outputted
+        :return: nothing
+        """
         adjusted_path = os.path.normpath(filepath)
         json_str = json.dumps(self.save_data, separators=(',', ':'))
         lz_string = self.compress_lz_string(json_str)
         try:
-            with open(adjusted_path, "w") as f:
-                f.write(lz_string)
+            with open(adjusted_path, "w") as file:
+                file.write(lz_string)
         except OSError:
             logger = get_logger()
             logger.warning(f"save_data_to_file() unable to write to file {adjusted_path}")
@@ -243,9 +261,27 @@ class EvolveSaveEditor:
             logger.warning("could not load resource or city node in data passed to stack_resources()")
             return save_data
 
+        crates_unlocked, containers_unlocked = EvolveSaveEditor._are_stackables_unlocked(city)
+
+        if not crates_unlocked and not containers_unlocked:
+            # nothing to add here
+            return save_data
+
+        for name in resources:
+            resource = resources[name]
+            try:
+                EvolveSaveEditor._stack_one_resource(resource, amount, crates_unlocked, containers_unlocked)
+            except KeyError:
+                continue
+
+        updated_data = save_data
+        updated_data["resource"] = resources
+        return updated_data
+
+    @staticmethod
+    def _are_stackables_unlocked(city):
         crates_unlocked = False
         containers_unlocked = False
-
         try:
             if city["storage_yard"]["count"] > 0:
                 crates_unlocked = True
@@ -259,30 +295,21 @@ class EvolveSaveEditor:
         except KeyError:
             logger = get_logger()
             logger.info("containers are not unlocked")
+        return crates_unlocked, containers_unlocked
 
-        if not crates_unlocked and not containers_unlocked:
-            # nothing to add here
-            return save_data
-
-        for name in resources:
-            resource = resources[name]
-            try:
-                if not resource["stackable"]:
-                    # this resource doesn't use containers and crates
-                    continue
-                if resource["amount"] == 0:
-                    # don't add containers for resources that aren't unlocked yet
-                    continue
-                if crates_unlocked and resource["crates"] < amount:
-                    resource["crates"] = amount
-                if containers_unlocked and resource["containers"] < amount:
-                    resource["containers"] = amount
-            except KeyError:
-                continue
-
-        updated_data = save_data
-        updated_data["resource"] = resources
-        return updated_data
+    @staticmethod
+    def _stack_one_resource(resource, amount, crates_unlocked, containers_unlocked):
+        if not resource["stackable"]:
+            # this resource doesn't use containers and crates
+            return
+        if resource["amount"] == 0:
+            # don't add containers for resources that aren't unlocked yet
+            return
+        if crates_unlocked and resource["crates"] < amount:
+            resource["crates"] = amount
+        if containers_unlocked and resource["containers"] < amount:
+            resource["containers"] = amount
+        return
 
     @staticmethod
     def adjust_buildings(save_data, amounts):
@@ -326,27 +353,17 @@ class EvolveSaveEditor:
 
     @staticmethod
     def _update_building_counts(data, amounts):
-        for Building_name in data:
-            building = data[Building_name]
+        for building_name in data:
+            building = data[building_name]
             try:
                 if building["count"] == 0:
                     continue
-                if Building_name in EvolveSaveEditor.BUILDING_TYPES["special"]:
-                    # world collider has total 1859 segments, last one has to be done manually
-                    if Building_name == "world_collider" and building["count"] < 1858:
-                        building["count"] = 1858
-                    # swarm satellite scales based on swarm_control
-                    elif Building_name == "swarm_satellite":
-                        max_swarms = 6 * data["swarm_control"]["count"]
-                        if building["count"] < max_swarms:
-                            building["count"] = max_swarms
-                    # other special buildings have total 100 segments, last one has to be done manually
-                    else:
-                        if building["count"] < 99:
-                            building["count"] = 99
+                if building_name in EvolveSaveEditor.BUILDING_TYPES["special"]:
+                    building["count"] = EvolveSaveEditor._get_special_building_count(data, building_name,
+                                                                                     building["count"])
                     continue
                 for type_name in EvolveSaveEditor.BUILDING_TYPES:
-                    if Building_name in EvolveSaveEditor.BUILDING_TYPES[type_name]:
+                    if building_name in EvolveSaveEditor.BUILDING_TYPES[type_name]:
                         amount = getattr(amounts, type_name)
                         if building["count"] < amount:
                             building["count"] = amount
@@ -354,6 +371,21 @@ class EvolveSaveEditor:
             except (KeyError, TypeError):
                 continue
         return data
+
+    @staticmethod
+    def _get_special_building_count(other_building_data, name, curr_count):
+        # world collider has total 1859 segments, last one has to be done manually
+        if name == "world_collider" and curr_count < 1858:
+            return 1858
+        # swarm satellite scales based on swarm_control
+        if name == "swarm_satellite":
+            max_swarms = 6 * other_building_data["swarm_control"]["count"]
+            if curr_count < max_swarms:
+                return max_swarms
+        # other special buildings have total 100 segments, last one has to be done manually
+        elif curr_count < 99:
+            return 99
+        return curr_count
 
     @staticmethod
     def fill_population(save_data):
@@ -567,18 +599,21 @@ class EvolveSaveEditor:
                 elif research_name == "launch_facility":
                     if research["rank"] >= 1:
                         continue
-                    if research["complete"] < 99:
-                        research["complete"] = 99
+                    EvolveSaveEditor._update_arpa_project(research)
                 # we're in one of the uncapped rank researches
                 else:
-                    if research["complete"] < 99:
-                        research["complete"] = 99
+                    EvolveSaveEditor._update_arpa_project(research)
             except (KeyError, TypeError):
                 continue
 
         updated_data = save_data
         updated_data["arpa"] = arpa
         return updated_data
+
+    @staticmethod
+    def _update_arpa_project(research):
+        if research["complete"] < 99:
+            research["complete"] = 99
 
     class BuildingAmountsParam:
         # used in adjust_buildings() call
