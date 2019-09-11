@@ -6,11 +6,18 @@ env:
   - TOX_ENV=bandit
   - TOX_ENV=flake8
   - TOX_ENV=pylint
+  global:
+        CC_TEST_REPORTER_ID=0abed806652b82e8b23562b6efe339a472ec6be2e473a360d57f1ed60ac36453
 
 # matrix:
 #  include:
 #    - python: "3.6"
 #      env: TOX_ENV=py36
+
+before_install:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
 
 install:
   - pip install -r requirements.txt
@@ -18,6 +25,9 @@ install:
 
 script:
   - tox -e $TOX_ENV
+
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
 
 after_success:
   - coveralls
