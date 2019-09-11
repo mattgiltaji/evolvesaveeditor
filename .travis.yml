@@ -2,12 +2,14 @@ language: python
 python: "3.7"
 
 env:
-  - TOX_ENV=py37
-  - TOX_ENV=bandit
-  - TOX_ENV=flake8
-  - TOX_ENV=pylint
   global:
-        CC_TEST_REPORTER_ID=0abed806652b82e8b23562b6efe339a472ec6be2e473a360d57f1ed60ac36453
+    - CC_TEST_REPORTER_ID=0abed806652b82e8b23562b6efe339a472ec6be2e473a360d57f1ed60ac36453
+  matrix:
+    - TOX_ENV=py37
+    - TOX_ENV=bandit
+    - TOX_ENV=flake8
+    - TOX_ENV=pylint
+
 
 # matrix:
 #  include:
