@@ -45,7 +45,7 @@ To use this save editor:
 
 ### From Executable
 
-   1. Download the latest executable for your OSfrom the [releases page](https://github.com/mattgiltaji/evolvesaveeditor/releases/)
+   1. Download the latest executable for your OS from the [releases page](https://github.com/mattgiltaji/evolvesaveeditor/releases/)
       * Only 64 bit linux and 64 bit windows executables are currently available.
       * Other OSes will need to run python directly.
    1. Export save from Settings tab in Evolve.
