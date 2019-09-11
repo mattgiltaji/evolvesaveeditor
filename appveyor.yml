@@ -19,18 +19,6 @@ environment:
     PYTHON_ARCH: "32"
     PYTHON_VERSION: 3.7
     DEPLOY_SCENARIO: false
-  - NAME: "py36x64_test"
-    PYTHON: "C:\\Python36-x64"
-    TOXENV: py36
-    PYTHON_ARCH: "64"
-    PYTHON_VERSION: 3.6
-    DEPLOY_SCENARIO: false
-  - NAME: "py36x32_test"
-    PYTHON: "C:\\Python36"
-    TOXENV: py36
-    PYTHON_ARCH: "32"
-    PYTHON_VERSION: 3.6
-    DEPLOY_SCENARIO: false
 
 init:
 - ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%

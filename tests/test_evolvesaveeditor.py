@@ -515,10 +515,10 @@ class TestEvolveSaveEditorAdjustSaveData:
         test_input = {"city": {"basic_housing": {"count": 6}}, "space": {"swarm_control": {"count": 2}},
                       "interstellar": {"processing": {"count": 4}}, "portal": {"carport": {"count": 20}}}
         expected = copy.deepcopy(test_input)
-        expected["city"]["basic_housing"]["count"] = evolve_save_editor.BuildingAmountsParam().housing
-        expected["space"]["swarm_control"]["count"] = evolve_save_editor.BuildingAmountsParam().support
-        expected["interstellar"]["processing"]["count"] = evolve_save_editor.BuildingAmountsParam().boost
-        expected["portal"]["carport"]["count"] = evolve_save_editor.BuildingAmountsParam().job
+        expected["city"]["basic_housing"]["count"] = evolve_save_editor.DEFAULT_BUILDING_AMOUNTS.housing
+        expected["space"]["swarm_control"]["count"] = evolve_save_editor.DEFAULT_BUILDING_AMOUNTS.support
+        expected["interstellar"]["processing"]["count"] = evolve_save_editor.DEFAULT_BUILDING_AMOUNTS.boost
+        expected["portal"]["carport"]["count"] = evolve_save_editor.DEFAULT_BUILDING_AMOUNTS.job
         evolve_save_editor.save_data = test_input
         evolve_save_editor.adjust_save_data()
         assert evolve_save_editor.save_data == expected
@@ -671,41 +671,40 @@ class TestEvolveSaveEditorAdjustBuildings:
     def test_adjust_buildings_can_handle_no_buildings(self):
         test_input = {"city": {}, "space": {}, "interstellar": {}, "portal": {}}
         expected = copy.deepcopy(test_input)
-        actual = Ese.adjust_buildings(test_input, Ese.BuildingAmountsParam())
+        actual = Ese.adjust_buildings(test_input, Ese.DEFAULT_BUILDING_AMOUNTS)
         assert actual == expected
 
     def test_adjust_buildings_skips_zero_and_no_count_buildings(self):
         test_input = {"city": {"biome": "oceanic", "university": {"count": 0}, "rock_quarry": {"count": 1}, },
                       "space": {}, "interstellar": {}, "portal": {}}
         expected = {"city": {"biome": "oceanic", "university": {"count": 0},
-                             "rock_quarry": {"count": Ese.BuildingAmountsParam().boost}, }, "space": {},
+                             "rock_quarry": {"count": Ese.DEFAULT_BUILDING_AMOUNTS.boost}, }, "space": {},
                     "interstellar": {}, "portal": {}}
-        actual = Ese.adjust_buildings(test_input, Ese.BuildingAmountsParam())
+        actual = Ese.adjust_buildings(test_input, Ese.DEFAULT_BUILDING_AMOUNTS)
         assert actual == expected
 
     def test_adjust_buildings_will_not_lower_building_count(self):
         test_input = {"city": {"university": {"count": 100000000}}, "space": {}, "interstellar": {}, "portal": {}}
         expected = copy.deepcopy(test_input)
-        actual = Ese.adjust_buildings(test_input, Ese.BuildingAmountsParam())
+        actual = Ese.adjust_buildings(test_input, Ese.DEFAULT_BUILDING_AMOUNTS)
         assert actual == expected
 
     def test_adjust_buildings_special_goes_to_proper_limits(self):
         test_input = {"city": {}, "space": {"swarm_control": {"count": 50}, "swarm_satellite": {"count": 3},
                                             "world_collider": {"count": 1}},
                       "interstellar": {"dyson": {"count": 2}, "stellar_engine": {"count": 4}}, "portal": {}}
-        expected = {"city": {}, "space": {"swarm_control": {"count": Ese.BuildingAmountsParam().support},
-                                          "swarm_satellite": {"count": Ese.BuildingAmountsParam().support * 6},
+        expected = {"city": {}, "space": {"swarm_control": {"count": Ese.DEFAULT_BUILDING_AMOUNTS.support},
+                                          "swarm_satellite": {"count": Ese.DEFAULT_BUILDING_AMOUNTS.support * 6},
                                           "world_collider": {"count": 1858}},
                     "interstellar": {"dyson": {"count": 99}, "stellar_engine": {"count": 99}}, "portal": {}}
-        actual = Ese.adjust_buildings(test_input, Ese.BuildingAmountsParam())
+        actual = Ese.adjust_buildings(test_input, Ese.DEFAULT_BUILDING_AMOUNTS)
         assert actual == expected
 
     def test_adjust_buildings_boost_type(self):
         test_input = {"city": {"temple": {"count": 10}}, "space": {"ziggurat": {"count": 5}},
                       "interstellar": {"processing": {"count": 4}}, "portal": {"turret": {"count": 3}}}
         count = 9000
-        amounts = Ese.BuildingAmountsParam()
-        amounts.boost = count
+        amounts = Ese.BuildingAmountsParam(boost=count)
         expected = {"city": {"temple": {"count": count}}, "space": {"ziggurat": {"count": count}},
                     "interstellar": {"processing": {"count": count}}, "portal": {"turret": {"count": count}}}
         actual = Ese.adjust_buildings(test_input, amounts)
@@ -715,8 +714,7 @@ class TestEvolveSaveEditorAdjustBuildings:
         test_input = {"city": {"basic_housing": {"count": 6}}, "space": {}, "interstellar": {"habitat": {"count": 4}},
                       "portal": {}}
         count = 90210
-        amounts = Ese.BuildingAmountsParam()
-        amounts.housing = count
+        amounts = Ese.BuildingAmountsParam(housing=count)
         expected = {"city": {"basic_housing": {"count": count}}, "space": {},
                     "interstellar": {"habitat": {"count": count}}, "portal": {}}
         actual = Ese.adjust_buildings(test_input, amounts)
@@ -726,8 +724,7 @@ class TestEvolveSaveEditorAdjustBuildings:
         test_input = {"city": {"bank": {"count": 73}}, "space": {"living_quarters": {"count": 15}},
                       "interstellar": {}, "portal": {"carport": {"count": 20}}}
         count = 925
-        amounts = Ese.BuildingAmountsParam()
-        amounts.job = count
+        amounts = Ese.BuildingAmountsParam(job=count)
         expected = {"city": {"bank": {"count": count}}, "space": {"living_quarters": {"count": count}},
                     "interstellar": {}, "portal": {"carport": {"count": count}}}
         actual = Ese.adjust_buildings(test_input, amounts)
@@ -737,8 +734,7 @@ class TestEvolveSaveEditorAdjustBuildings:
         test_input = {"city": {"amphitheatre": {"count": 15}, "casino": {"count": 7}}, "space": {}, "interstellar": {},
                       "portal": {}}
         count = 420
-        amounts = Ese.BuildingAmountsParam()
-        amounts.morale_job = count
+        amounts = Ese.BuildingAmountsParam(morale_job=count)
         expected = {"city": {"amphitheatre": {"count": count}, "casino": {"count": count}}, "space": {},
                     "interstellar": {}, "portal": {}}
         actual = Ese.adjust_buildings(test_input, amounts)
@@ -748,8 +744,7 @@ class TestEvolveSaveEditorAdjustBuildings:
         test_input = {"city": {"oil_power": {"count": 2}}, "space": {"geothermal": {"count": 4}},
                       "interstellar": {"fusion": {"count": 6}}, "portal": {}}
         count = 321
-        amounts = Ese.BuildingAmountsParam()
-        amounts.power_generator = count
+        amounts = Ese.BuildingAmountsParam(power_generator=count)
         expected = {"city": {"oil_power": {"count": count}}, "space": {"geothermal": {"count": count}},
                     "interstellar": {"fusion": {"count": count}}, "portal": {}}
         actual = Ese.adjust_buildings(test_input, amounts)
@@ -759,8 +754,7 @@ class TestEvolveSaveEditorAdjustBuildings:
         test_input = {"city": {"oil_well": {"count": 7}}, "space": {"elerium_ship": {"count": 8}},
                       "interstellar": {"g_factory": {"count": 9}}, "portal": {}}
         count = 180
-        amounts = Ese.BuildingAmountsParam()
-        amounts.production = count
+        amounts = Ese.BuildingAmountsParam(production=count)
         expected = {"city": {"oil_well": {"count": count}}, "space": {"elerium_ship": {"count": count}},
                     "interstellar": {"g_factory": {"count": count}}, "portal": {}}
         actual = Ese.adjust_buildings(test_input, amounts)
@@ -770,8 +764,7 @@ class TestEvolveSaveEditorAdjustBuildings:
         test_input = {"city": {"shed": {"count": 4}}, "space": {"elerium_contain": {"count": 5}},
                       "interstellar": {"warehouse": {"count": 6}}, "portal": {"sensor_drone": {"count": 7}}}
         count = 1024
-        amounts = Ese.BuildingAmountsParam()
-        amounts.storage = count
+        amounts = Ese.BuildingAmountsParam(storage=count)
         expected = {"city": {"shed": {"count": count}}, "space": {"elerium_contain": {"count": count}},
                     "interstellar": {"warehouse": {"count": count}}, "portal": {"sensor_drone": {"count": count}}}
         actual = Ese.adjust_buildings(test_input, amounts)
@@ -781,8 +774,7 @@ class TestEvolveSaveEditorAdjustBuildings:
         test_input = {"city": {}, "space": {"nav_beacon": {"count": 1}}, "interstellar": {"starport": {"count": 2}},
                       "portal": {}}
         count = 1800
-        amounts = Ese.BuildingAmountsParam()
-        amounts.support = count
+        amounts = Ese.BuildingAmountsParam(support=count)
         expected = {"city": {}, "space": {"nav_beacon": {"count": count}},
                     "interstellar": {"starport": {"count": count}}, "portal": {}}
         actual = Ese.adjust_buildings(test_input, amounts)

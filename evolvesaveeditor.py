@@ -3,8 +3,8 @@ This script is intended to be a save editor for the game evolve
 The game can be found at https://pmotschmann.github.io/Evolve/
 """
 
-
 import argparse
+import collections
 import copy
 import json
 import logging
@@ -78,6 +78,14 @@ class EvolveSaveEditor:
         3. Call a save method to output save data from the instance to an external source
     """
     save_data = {}
+
+    BuildingAmountsParam = collections.namedtuple("BuildingAmountsParam",
+                                                  ["boost", "housing", "job", "morale_job", "power_generator",
+                                                   "production", "storage", "support"],
+                                                  defaults=[1000, 1000, 100, 1000, 1000, 100, 1000, 1000])
+
+    # noinspection PyArgumentList
+    DEFAULT_BUILDING_AMOUNTS = BuildingAmountsParam()  # use all default values
 
     BUILDING_TYPES = {
         # buildings that provide a production or efficiency bonus bu don't make things themselves
@@ -186,7 +194,7 @@ class EvolveSaveEditor:
         # TODO: make this pull settings from somewhere to determine parameters for each call
         data = self.fill_resources(data, self.DEFAULT_UNBOUNDED_RESOURCE_AMOUNT)
         data = self.stack_resources(data, self.DEFAULT_STACK_AMOUNT)
-        data = self.adjust_buildings(data, self.BuildingAmountsParam())
+        data = self.adjust_buildings(data, self.DEFAULT_BUILDING_AMOUNTS)
         data = self.fill_population(data)
         data = self.fill_soldiers(data)
         data = self.adjust_prestige_currency(data, self.DEFAULT_PRESTIGE_CURRENCY_AMOUNTS)
@@ -614,18 +622,6 @@ class EvolveSaveEditor:
     def _update_arpa_project(research):
         if research["complete"] < 99:
             research["complete"] = 99
-
-    class BuildingAmountsParam:
-        # used in adjust_buildings() call
-        # default amounts of each building type are below, adjust after instantiating
-        boost = 1000
-        housing = 1000
-        job = 100
-        morale_job = 1000
-        power_generator = 1000
-        production = 100
-        storage = 1000
-        support = 1000
 
 
 if __name__ == "__main__":  # pragma: no cover

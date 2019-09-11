@@ -22,7 +22,7 @@ This save editor can currently do these things:
 ### How To Use
 To use this save editor:
 ##### From Source:
-   1. Have version 3.6 or higher [Python](https://www.python.org/downloads/) installed on your local machine.
+   1. Have version 3.7 or higher [Python](https://www.python.org/downloads/) installed on your local machine.
    1. Export save from Settings tab in Evolve.
    1. Copy & Paste that exported save data into a file on your local machine.
    1. Save and close the file.
