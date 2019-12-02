@@ -694,7 +694,7 @@ class TestEvolveSaveEditorAdjustBuildings:
                                             "world_collider": {"count": 1}},
                       "interstellar": {"dyson": {"count": 2}, "stellar_engine": {"count": 4}}, "portal": {}}
         expected = {"city": {}, "space": {"swarm_control": {"count": Ese.DEFAULT_BUILDING_AMOUNTS.support},
-                                          "swarm_satellite": {"count": Ese.DEFAULT_BUILDING_AMOUNTS.support * 6},
+                                          "swarm_satellite": {"count": Ese.DEFAULT_BUILDING_AMOUNTS.support * 18},
                                           "world_collider": {"count": 1858}},
                     "interstellar": {"dyson": {"count": 99}, "stellar_engine": {"count": 99}}, "portal": {}}
         actual = Ese.adjust_buildings(test_input, Ese.DEFAULT_BUILDING_AMOUNTS)
