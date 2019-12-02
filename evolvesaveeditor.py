@@ -88,11 +88,11 @@ class EvolveSaveEditor:
     DEFAULT_BUILDING_AMOUNTS = BuildingAmountsParam()  # use all default values
 
     BUILDING_TYPES = {
-        # buildings that provide a production or efficiency bonus bu don't make things themselves
-        "boost": ["attractor", "biodome", "biolab", "boot_camp", "drone", "far_reach", "gps", "hospital",
+        # buildings that provide a production or efficiency bonus but don't make things themselves
+        "boost": ["attractor", "biodome", "biolab", "boot_camp", "citadel", "drone", "far_reach", "gps", "hospital",
                   "library", "lumber_yard", "mass_driver", "mass_ejector", "metal_refinery", "processing",
-                  "red_mine", "rock_quarry", "satellite", "sawmill", "swarm_plant", "temple", "tourist_center",
-                  "turret", "vr_center", "war_droid", "war_drone", "ziggurat"],
+                  "red_mine", "rock_quarry", "satellite", "sawmill", "shrine", "swarm_plant", "temple",
+                  "tourist_center", "turret", "vr_center", "war_droid", "war_drone", "ziggurat"],
         # buildings that increase the citizen cap
         "housing": ["apartment", "basic_housing", "cottage", "farm", "habitat", "lodge"],
         # buildings that provide job slots for citizens
@@ -387,7 +387,7 @@ class EvolveSaveEditor:
             return 1858
         # swarm satellite scales based on swarm_control
         if name == "swarm_satellite":
-            max_swarms = 6 * other_building_data["swarm_control"]["count"]
+            max_swarms = 18 * other_building_data["swarm_control"]["count"]
             if curr_count < max_swarms:
                 return max_swarms
         # other special buildings have total 100 segments, last one has to be done manually
