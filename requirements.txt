@@ -1,6 +1,6 @@
-coveralls==1.8.2
+coveralls==1.10.0
 lzstring==1.0.4
-pyinstaller==3.5
-pytest==5.3.1
+pyinstaller==3.6
+pytest==5.3.3
 pytest-cov==2.8.1
-tox==3.14.1
+tox==3.14.3
