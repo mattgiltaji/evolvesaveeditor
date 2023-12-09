@@ -2,7 +2,6 @@
 
 A save editor for the game "Evolve"
 
-[![Travis Build Status](https://travis-ci.org/mattgiltaji/evolvesaveeditor.svg?branch=master)](https://travis-ci.org/mattgiltaji/evolvesaveeditor)
 [![Appveyor Build Status](https://ci.appveyor.com/api/projects/status/csp5r4mtud3fy4i5/branch/master?svg=true)](https://ci.appveyor.com/project/mattgiltaji/evolvesaveeditor/branch/master)
 [![Coverage Status](https://coveralls.io/repos/github/mattgiltaji/evolvesaveeditor/badge.svg?branch=master)](https://coveralls.io/github/mattgiltaji/evolvesaveeditor?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/4bc2ee1f7988749e9668/maintainability)](https://codeclimate.com/github/mattgiltaji/evolvesaveeditor/maintainability)
